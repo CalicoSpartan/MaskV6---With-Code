@@ -681,7 +681,7 @@ void AFPSCharacter::PickupEquipment()
 
 						if (ABaseGrenade* const Grenade = Cast<ABaseGrenade>(PossibleEquipment[i]))
 						{
-							if (!Grenade->IsPendingKill() && !Grenade->bPendingExplode)
+							if (!Grenade->IsPendingKill() && !Grenade->bIsActive)
 							{
 								Grenades.Add(Grenade);
 								Grenade->Destroy();
@@ -880,24 +880,27 @@ void AFPSCharacter::GrenadeNearby_Implementation()
 			Array.Append(PossibleGrenades[i]->GetName());
 			if (ABaseGrenade* Grenade = Cast<ABaseGrenade>(PossibleGrenades[i]))
 			{
-				GrenadeExist = true;
-				//GrenadeNearby(Grenade);
-				bIsNearGrenade = true;
-				//SetIsNearGrenade(true);
-				float DirToGrenade = ((GetActorLocation() - Grenade->GetActorLocation()) * FVector(-1.0f, -1.0f, 0.0f)).GetSafeNormal().Rotation().Yaw;
-				float ForwardVector = (FPSCameraComponent->GetForwardVector() * FVector(1.0f, 1.0f, 0.0f)).GetSafeNormal().Rotation().Yaw;
-				GrenadeDegrees = DirToGrenade - ForwardVector - 90.0f;
+				if (Grenade->bIsActive)
+				{
+					GrenadeExist = true;
+					//GrenadeNearby(Grenade);
+					bIsNearGrenade = true;
+					//SetIsNearGrenade(true);
+					float DirToGrenade = ((GetActorLocation() - Grenade->GetActorLocation()) * FVector(-1.0f, -1.0f, 0.0f)).GetSafeNormal().Rotation().Yaw;
+					float ForwardVector = (FPSCameraComponent->GetForwardVector() * FVector(1.0f, 1.0f, 0.0f)).GetSafeNormal().Rotation().Yaw;
+					GrenadeDegrees = DirToGrenade - ForwardVector - 90.0f;
 
-				GrenadeDir = FVector2D(FMath::Cos(FMath::DegreesToRadians(GrenadeDegrees)), FMath::Sin(FMath::DegreesToRadians(GrenadeDegrees)));
+					GrenadeDir = FVector2D(FMath::Cos(FMath::DegreesToRadians(GrenadeDegrees)), FMath::Sin(FMath::DegreesToRadians(GrenadeDegrees)));
 
 
-				/*
-				FVector2D DirectionToGrenade = -1.0f *  FVector2D(FVector2D(GetActorLocation().X, GetActorLocation().Y) - FVector2D(Grenade->GetActorLocation().X, Grenade->GetActorLocation().Y)).GetSafeNormal();
-				FVector2D ForwardVector = FVector2D(FPSCameraComponent->GetForwardVector().X, FPSCameraComponent->GetForwardVector().Y).GetSafeNormal();
-				float DotProduct = FVector2D::DotProduct(ForwardVector,DirectionToGrenade);
-				GrenadeDegrees = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
-				GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Cyan, "Degrees:  " + FString::SanitizeFloat(GrenadeDegrees));
-				*/
+					/*
+					FVector2D DirectionToGrenade = -1.0f *  FVector2D(FVector2D(GetActorLocation().X, GetActorLocation().Y) - FVector2D(Grenade->GetActorLocation().X, Grenade->GetActorLocation().Y)).GetSafeNormal();
+					FVector2D ForwardVector = FVector2D(FPSCameraComponent->GetForwardVector().X, FPSCameraComponent->GetForwardVector().Y).GetSafeNormal();
+					float DotProduct = FVector2D::DotProduct(ForwardVector,DirectionToGrenade);
+					GrenadeDegrees = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
+					GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Cyan, "Degrees:  " + FString::SanitizeFloat(GrenadeDegrees));
+					*/
+				}
 
 				//UE_LOG(LogClass, Log, TEXT("DotProduct:  %f"),DotProduct);
 			}
@@ -1059,9 +1062,11 @@ bool AFPSCharacter::ThrowGrenade_Validate()
 }
 void AFPSCharacter::ThrowGrenade_Implementation()
 {
-	
+	FString Array;
 	if (Grenades.Num() > 0)
 	{
+		
+
 		if (Grenades[0] != NULL)
 
 		{
@@ -1070,21 +1075,11 @@ void AFPSCharacter::ThrowGrenade_Implementation()
 			{
 				ABaseGrenade* Grenade = GetWorld()->SpawnActor<ABaseGrenade>(FragSUB, FPSCameraComponent->GetComponentLocation() + FPSCameraComponent->GetForwardVector() * 100.0, FRotator::ZeroRotator);
 				MoveIgnoreActorAdd(Grenade);
-
-				
-				UE_LOG(LogClass, Log, TEXT("ThrowStrength: %f"),GrenadeThrowStrength);
-				UE_LOG(LogClass, Log, TEXT("ThrowVector: %s"),*FVector(FPSCameraComponent->GetForwardVector() * GrenadeThrowStrength + FVector(0, 0, GrenadeThrowUpForce)).ToString());
 				Grenade->Thrown(FPSCameraComponent->GetForwardVector() + FVector(0, 0, GrenadeThrowUpForce),GrenadeThrowStrength,this);
-				
-				
-
-				
+				Grenades.RemoveAt(0);
 			}
 			
 
-			//ABaseGrenade* Grenade = GetWorld()->SpawnActor(Grenades[0]->StaticClass->GetFName(), NAME_None, FPSCameraComponent->GetComponentLocation() + FPSCameraComponent->GetForwardVector() * 10.0f, FRotator::ZeroRotator);
-			//UE_LOG(LogClass, Log, TEXT("%s"),*Grenades[0]->StaticClass()->GetName());
-			//Grenades[0] = GetWorld()
 		}
 		else
 		{

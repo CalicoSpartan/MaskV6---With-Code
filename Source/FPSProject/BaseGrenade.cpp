@@ -51,6 +51,7 @@ void ABaseGrenade::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(ABaseGrenade, ExplosionForce);
 	DOREPLIFETIME(ABaseGrenade, MaxDamageBlastRadius);
 	DOREPLIFETIME(ABaseGrenade, ProjectileMovement);
+	DOREPLIFETIME(ABaseGrenade, bIsActive);
 
 }
 bool ABaseGrenade::EnablePhysics_Validate(APawn* Thrower)
@@ -77,6 +78,7 @@ void ABaseGrenade::Thrown_Implementation(FVector Direction,float Force, APawn* T
 	{
 		SetExplosionTimer();
 	}
+	SetIsActive(true);
 	GrenadeThrower = Thrower;
 	SphereCollider->IgnoreActorWhenMoving(Thrower, true);
 	GetStaticMeshComponent()->IgnoreActorWhenMoving(Thrower, true);
@@ -91,7 +93,14 @@ void ABaseGrenade::Thrown_Implementation(FVector Direction,float Force, APawn* T
 	UE_LOG(LogClass, Log, TEXT("Velocity: %s"), *ProjectileMovement->Velocity.ToString());
 	UE_LOG(LogClass, Log, TEXT("InitialSpeed: %f"),ProjectileMovement->InitialSpeed);
 }
-
+bool ABaseGrenade::SetIsActive_Validate(bool IsActive)
+{
+	return true;
+}
+void ABaseGrenade::SetIsActive_Implementation(bool IsActive)
+{
+	bIsActive = IsActive;
+}
 
 void ABaseGrenade::SetExplosionTimer_Implementation()
 {

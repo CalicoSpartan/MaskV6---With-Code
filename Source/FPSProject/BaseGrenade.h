@@ -48,17 +48,21 @@ public:
 		float ExplosionDelay;
 	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
 		APawn* GrenadeThrower;
-
+	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
+		bool bIsActive = false;
+	
 
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 		void EnablePhysics(APawn* Thrower);
 
-	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable, WithValidation)
 		void Thrown(FVector Direction,float Force,APawn* Thrower);
 
-	UFUNCTION(NetMulticast, Reliable, WithValidation)
+	UFUNCTION(Server, Reliable, WithValidation)
 		void SetExplosionTimer();
-	UFUNCTION(NetMulticast, Reliable,WithValidation)
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+		void SetIsActive(bool IsActive);
+	UFUNCTION(Server, Reliable,WithValidation)
 		void Explode();
 	UFUNCTION()
 		void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
