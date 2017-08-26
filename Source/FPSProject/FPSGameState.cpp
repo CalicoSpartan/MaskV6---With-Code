@@ -340,7 +340,58 @@ void AFPSGameState::Update()
 
 
 						////////////////////////////////////////////////////////////////////////////////////////////////
-
+						for (int32 i = 0; i < Teams.Num(); ++i)
+						{
+							if (ABaseTeam* Team = Cast<ABaseTeam>(Teams[i]))
+							{
+								int32 BestScore = -1;
+								TArray<AFPSPlayerState*> CorrectTeamOrder;
+								for (int32 psindex = 0; psindex < Team->TeamPlayerStates.Num(); ++psindex)
+								{
+									if (AFPSPlayerState* playerstate = Cast<AFPSPlayerState>(Team->TeamPlayerStates[psindex]))
+									{
+										if (playerstate->GetScore() > BestScore)
+										{
+											CorrectTeamOrder.Insert(playerstate, 0);
+											BestScore = playerstate->GetScore();
+										}
+										else if (CorrectTeamOrder.Num() > 1)
+										{
+											for (int32 otherpsindex = 0; otherpsindex < CorrectTeamOrder.Num(); ++otherpsindex)
+											{
+												if (AFPSPlayerState* otherps = Cast<AFPSPlayerState>(CorrectTeamOrder[otherpsindex]))
+												{
+													if (CorrectTeamOrder.Contains(playerstate) == false)
+													{
+														if (playerstate->GetScore() > otherps->GetScore())
+														{
+															CorrectTeamOrder.Insert(playerstate, otherpsindex);
+														}
+													}
+												}
+												else
+												{
+													CorrectTeamOrder.Emplace(playerstate);
+												}
+											}
+											if (CorrectTeamOrder.Contains(playerstate) == false)
+											{
+												CorrectTeamOrder.Emplace(playerstate);
+											}
+										}
+										else
+										{
+											if (CorrectTeamOrder.Contains(playerstate) == false)
+											{
+												CorrectTeamOrder.Emplace(playerstate);
+											}
+										}
+									}
+								}
+								Team->UpdateTeamOrder(CorrectTeamOrder);
+							}
+						}
+						
 						/*
 						TArray<AFPSPlayerState*> CorrectTeam1PlayerOrder;
 						TArray<AFPSPlayerState*> CorrectTeam2PlayerOrder;
@@ -522,6 +573,11 @@ void AFPSGameState::Update()
 					}
 
 				}
+				if (AFPSPlayerController* pc = Cast<AFPSPlayerController>(PlayerController))
+				{
+					pc->UpdateScoreBoardUI();
+				}
+				
 			}
 
 

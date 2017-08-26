@@ -822,7 +822,6 @@ void AFPSCharacter::ServerPickupWeapon_Implementation()
 		if (GameState->GetCurrentState() == EGamePlayState::EPlaying)
 		{
 
-
 			if (Role == ROLE_Authority)
 			{
 				// Get all overlapping actors and store them in an array
@@ -833,7 +832,7 @@ void AFPSCharacter::ServerPickupWeapon_Implementation()
 				{
 					AGun* const Gun = Cast<AGun>(CollectedActors[i]);
 					if (Gun != NULL && !Gun->IsPendingKill() && Gun->IsActive() && Gun->WeaponInstigator == NULL) {
-						
+
 						if (CurrentPrimary != NULL)
 						{
 							if (AGun* PrimaryGun = Cast<AGun>(CurrentPrimary))
@@ -856,6 +855,7 @@ void AFPSCharacter::ServerPickupWeapon_Implementation()
 					}
 				}
 			}
+			
 		}
 	}
 }
