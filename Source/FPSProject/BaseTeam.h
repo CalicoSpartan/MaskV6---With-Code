@@ -31,6 +31,8 @@ public:
 	TArray<AFPSPlayerState*> TeamPlayerStates;
 	UFUNCTION(NetMulticast, Reliable)
 		void ChangeScore(int32 delta);
+	UFUNCTION(NetMulticast, Reliable)
+		void AddToPlayerStates(AFPSPlayerState* NewPlayer);
 
 protected:
 	// Called when the game starts or when spawned

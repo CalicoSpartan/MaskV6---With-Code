@@ -366,7 +366,7 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 				if (ABaseTeam* Team1 = Cast<ABaseTeam>(Teams[1]))
 				{
 					//Team1->TeamNumber = 1;
-					Team1->TeamPlayerStates.Add(MyPlayerState);
+					Team1->AddToPlayerStates(MyPlayerState);
 					MyPlayerState->SetTeam(Team1);
 					
 				}
@@ -476,7 +476,8 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 									if (ps->Team == NULL)
 									{
 										ps->SetTeam(SmallestTeam);
-										SmallestTeam->TeamPlayerStates.AddUnique(ps);
+										SmallestTeam->AddToPlayerStates(ps);
+									
 										UE_LOG(LogClass, Log, TEXT("Assigned to team"));
 
 									}
@@ -486,7 +487,8 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 									if (ABaseTeam* ATeam = Cast<ABaseTeam>(Teams[0]))
 									{
 										ps->SetTeam(ATeam);
-										ATeam->TeamPlayerStates.Add(ps);
+										ATeam->AddToPlayerStates(ps);
+										
 									}
 								}
 

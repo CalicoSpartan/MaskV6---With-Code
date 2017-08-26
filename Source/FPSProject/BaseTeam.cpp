@@ -43,6 +43,11 @@ void ABaseTeam::BeginPlay()
 	
 }
 
+void ABaseTeam::AddToPlayerStates_Implementation(AFPSPlayerState* NewPlayer)
+{
+	TeamPlayerStates.Add(NewPlayer);
+}
+
 // Called every frame
 void ABaseTeam::Tick(float DeltaTime)
 {
