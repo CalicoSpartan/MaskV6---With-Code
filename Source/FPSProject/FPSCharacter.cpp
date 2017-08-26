@@ -134,6 +134,26 @@ void AFPSCharacter::TriggerDeathUI_Implementation()
 
 }
 
+bool AFPSCharacter::ServerDropEquipment_Validate()
+{
+	return true;
+}
+void AFPSCharacter::ServerDropEquipment_Implementation()
+{
+	if (Grenades.Num() > 0)
+	{
+		for (int32 i = 0; i < Grenades.Num(); ++i)
+		{
+			if (AFragGrenade* const frag = Cast<AFragGrenade>(Grenades[i]))
+			{
+				ABaseGrenade* Grenade = GetWorld()->SpawnActor<ABaseGrenade>(FragSUB, GetActorLocation() + GetActorForwardVector() * 100.0, FRotator::ZeroRotator);
+				Grenades.RemoveAt(i);
+			}
+		}
+	}
+}
+
+
 EPlayerState AFPSCharacter::GetCurrentState() const
 {
 	return CurrentState;
@@ -148,6 +168,7 @@ void AFPSCharacter::OnPlayerDeath_Implementation()
 {
 	DropWeapon();
 	SetCurrentState(EPlayerState::EPlayerDead);
+	ServerDropEquipment();
 	TriggerDeathUI();
 	// disconnect controller from pawn
 	DetachFromControllerPendingDestroy();
@@ -859,6 +880,7 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFPSCharacter, LastHitForce);
 	DOREPLIFETIME(AFPSCharacter, LastHitDirection);
 	DOREPLIFETIME(AFPSCharacter, bIsNearGrenade);
+	DOREPLIFETIME(AFPSCharacter, Grenades);
 
 }
 

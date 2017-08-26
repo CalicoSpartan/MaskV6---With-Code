@@ -55,14 +55,14 @@ public:
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 		void EnablePhysics(APawn* Thrower);
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
 		void Thrown(FVector Direction,float Force,APawn* Thrower);
 
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
 		void SetExplosionTimer();
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 		void SetIsActive(bool IsActive);
-	UFUNCTION(Server, Reliable,WithValidation)
+	UFUNCTION(NetMulticast, Reliable,WithValidation)
 		void Explode();
 	UFUNCTION()
 		void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);

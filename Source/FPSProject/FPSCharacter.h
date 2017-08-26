@@ -56,7 +56,7 @@ public:
 		void ShowEnemyName(class AFPSCharacter* Enemy);
 	UFUNCTION(BlueprintImplementableEvent)
 		void ShowEnemyNameBluePrint(class AFPSCharacter* Enemy);
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	UPROPERTY(Replicated,EditAnywhere,BlueprintReadWrite)
 	TArray<ABaseGrenade*> Grenades;
 	UPROPERTY(EditAnywhere)	
 		TSubclassOf<ABaseGrenade> FragSUB;
@@ -132,6 +132,8 @@ protected:
 		void PickupEquipment();
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void DropWeapon();
+	UFUNCTION(Server,Reliable,WithValidation, Category = "Weapon")
+		void ServerDropEquipment();
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void FireAgain();
 	UPROPERTY(EditDefaultsOnly, Category = "Health")

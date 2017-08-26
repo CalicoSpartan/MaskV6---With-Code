@@ -78,7 +78,8 @@ void ABaseGrenade::Thrown_Implementation(FVector Direction,float Force, APawn* T
 	{
 		SetExplosionTimer();
 	}
-	SetIsActive(true);
+	bIsActive = true;
+	//SetIsActive(true);
 	GrenadeThrower = Thrower;
 	SphereCollider->IgnoreActorWhenMoving(Thrower, true);
 	GetStaticMeshComponent()->IgnoreActorWhenMoving(Thrower, true);
