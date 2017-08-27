@@ -549,13 +549,20 @@ void AFPSGameState::Update()
 
 
 
-
-
-
+						/*
+						if (Role == ROLE_Authority)
+						{
+							UE_LOG(LogClass, Log, TEXT("GameState: Server"));
+						}
+						else
+						{
+							UE_LOG(LogClass, Log, TEXT("GameState: Client"));
+						}
+						*/
 
 						CallHUDUpdate();
-
 						Player->OnPlayerDeath();
+
 	
 
 

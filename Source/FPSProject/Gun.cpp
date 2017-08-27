@@ -82,8 +82,10 @@ bool AGun::ServerChangeAmmo_Validate(int32 Ammo, int32 Mag)
 void AGun::ServerChangeAmmo_Implementation(int32 Ammo, int32 Mag)
 {
 
-	
-	ChangeAmmo(Ammo, Mag);
+	if (Role == ROLE_Authority)
+	{
+		ChangeAmmo(Ammo, Mag);
+	}
 }
 
 

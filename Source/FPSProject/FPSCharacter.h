@@ -69,7 +69,7 @@ public:
 		void TriggerDeathUI();
 	UFUNCTION(BlueprintNativeEvent)
 		void TriggerDeathUIBlueprint();
-	UFUNCTION(Server, Reliable, WithValidation)
+	UFUNCTION()
 		void TriggerUpdateUI();
 	UFUNCTION(BlueprintNativeEvent)
 		void TriggerUpdateUIBlueprint();
@@ -117,8 +117,10 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, Category = "Damage")
 		FVector LastHitDirection;
 	// shut down the pawn and ragdoll it on all clients
-	UFUNCTION(NetMultiCast, Reliable) //multicast function happens on server and clients so everyone will see the player ragdoll
+	UFUNCTION(NetMulticast,Reliable) 
 		void OnPlayerDeath();
+	//UFUNCTION(Server, WithValidation, Reliable) //multicast function happens on server and clients so everyone will see the player ragdoll
+	//	void ServerOnPlayerDeath();
 	UFUNCTION(NetMultiCast, Reliable) //multicast function happens on server and clients so everyone will see the player ragdoll
 		void SetHitData(float Force,FName Bone,FVector Direction);
 
@@ -130,7 +132,7 @@ protected:
 		void PickupWeapon();
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void PickupEquipment();
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(Category = "Weapon")
 		void DropWeapon();
 	UFUNCTION(Server,Reliable,WithValidation, Category = "Equipment")
 		void ServerDropEquipment();

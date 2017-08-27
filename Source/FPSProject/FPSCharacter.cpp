@@ -92,11 +92,9 @@ void AFPSCharacter::TriggerAddColorBlueprint_Implementation()
 
 }
 
-bool AFPSCharacter::TriggerUpdateUI_Validate() {
-	return true;
-}
 
-void AFPSCharacter::TriggerUpdateUI_Implementation()
+
+void AFPSCharacter::TriggerUpdateUI()
 {
 
 	TriggerUpdateUIBlueprint();
@@ -180,6 +178,23 @@ void AFPSCharacter::SetCurrentState(EPlayerState NewState)
 		CurrentState = NewState;
 	}
 }
+/*
+bool AFPSCharacter::ServerOnPlayerDeath_Validate()
+{
+	return true;
+}
+
+void AFPSCharacter::ServerOnPlayerDeath_Implementation()
+{
+	if (Role == ROLE_Authority)
+	{
+		OnPlayerDeath();
+	}
+}
+*/
+
+
+
 void AFPSCharacter::OnPlayerDeath_Implementation()
 {
 	CollectionBox->bGenerateOverlapEvents = false;
@@ -209,25 +224,56 @@ void AFPSCharacter::OnPlayerDeath_Implementation()
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
 	IsDead = true;
-	if (Role == ROLE_AutonomousProxy)
-	{
-		ServerDropWeapon();
-	}
-	else
-	{
-		DropWeapon();
-	}
-
 	SetCurrentState(EPlayerState::EPlayerDead);
-	if (Role == ROLE_AutonomousProxy)
+	/*
+	if (Role == ROLE_Authority)
 	{
-		ServerDropEquipment();
-	}
-	else
-	{
-		UE_LOG(LogClass, Log, TEXT("Server called DropEquipment"));
+		UE_LOG(LogClass, Log, TEXT("Server Dropped Stuff"));
+		DropWeapon();
 		DropEquipment();
 	}
+	else
+	{
+		ServerDropWeapon();
+		ServerDropEquipment();
+		UE_LOG(LogClass, Log, TEXT("Im A Client"));
+	}
+	*/
+	//////drop weapon
+	if (AFPSGameState* const GameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
+	{
+		if (GameState->GetCurrentState() == EGamePlayState::EPlaying)
+		{
+
+
+
+			if (CurrentPrimary != NULL)
+			{
+				if (AGun* Gun = Cast<AGun>(CurrentPrimary))
+				{
+					Gun->DroppedBy(this);
+					CurrentPrimary = NULL;
+
+				}
+			}
+
+		}
+	}
+
+	//////drop equipment
+	if (Grenades.Num() > 0)
+	{
+		for (int32 i = 0; i < Grenades.Num(); ++i)
+		{
+			if (AFragGrenade* const frag = Cast<AFragGrenade>(Grenades[i]))
+			{
+				ABaseGrenade* Grenade = GetWorld()->SpawnActor<ABaseGrenade>(FragSUB, GetActorLocation() + GetActorForwardVector() * 100.0, FRotator::ZeroRotator);
+				//Grenades.RemoveAt(i);
+			}
+		}
+		Grenades.Empty();
+	}
+
 	if (LastHitForce != NULL && LastHitDirection != FVector::ZeroVector)
 	{
 		if (LastHitBone != "")
@@ -611,10 +657,12 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 					{
 						CurrentPrimary->ChangeAmmo(CurrentPrimary->TotalAmmo, CurrentPrimary->AmmoLeftInMag - 1);
 					}
+					
 					else
 					{
-						CurrentPrimary->ServerChangeAmmo(CurrentPrimary->TotalAmmo, CurrentPrimary->AmmoLeftInMag - 1);
+						UE_LOG(LogClass, Log, TEXT("ServerOnShoot(): Somehow we are a client"));
 					}
+					
 					if (IsZoomed == true)
 					{
 						if (simASV <= CurrentPrimary->ZoomMaxSpread)
@@ -744,11 +792,13 @@ void AFPSCharacter::PickupEquipment()
 												Gun->ChangeAmmo(Gun->TotalAmmo - AmmoNeeded, Gun->MagazineSize);
 												CurrentPrimary->ChangeAmmo(CurrentPrimary->MaxAmmo, CurrentPrimary->AmmoLeftInMag);
 											}
+											/*
 											else
 											{
 												Gun->ServerChangeAmmo(Gun->TotalAmmo - AmmoNeeded, Gun->MagazineSize);
 												CurrentPrimary->ServerChangeAmmo(CurrentPrimary->MaxAmmo, CurrentPrimary->AmmoLeftInMag);
 											}
+											*/
 
 
 										}
@@ -760,11 +810,13 @@ void AFPSCharacter::PickupEquipment()
 												CurrentPrimary->ChangeAmmo(CurrentPrimary->TotalAmmo + Gun->TotalAmmo, CurrentPrimary->AmmoLeftInMag);
 												Gun->ChangeAmmo(0, Gun->AmmoLeftInMag);
 											}
+											/*
 											else
 											{
 												CurrentPrimary->ServerChangeAmmo(CurrentPrimary->TotalAmmo + Gun->TotalAmmo, CurrentPrimary->AmmoLeftInMag);
 												Gun->ServerChangeAmmo(0, Gun->AmmoLeftInMag);
 											}
+											*/
 
 										}
 										

@@ -517,6 +517,14 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 					UE_LOG(LogClass, Log, TEXT("Everyone is on a team"));
 					if (AFPSGameState* TheGameState = Cast<AFPSGameState>(GameState))
 					{
+						//bool TeamsFilled = true;
+						for (int32 i = 0; i < Teams.Num(); ++i)
+						{
+							if (Teams[i]->TeamPlayerStates.Num() <= 0)
+							{
+								Teams.RemoveAt(i);
+							}
+						}
 						TheGameState->UpdateTeamList(Teams);
 					}
 					for (int32 team = 0; team < Teams.Num(); ++team)
