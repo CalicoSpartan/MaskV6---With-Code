@@ -103,6 +103,8 @@ public:
 	UFUNCTION(BlueprintAuthorityOnly, Category = "Weapon")
 		virtual void DroppedBy(APawn* Pawn);
 	UFUNCTION(Server, WithValidation, Reliable)
+		void ServerChangeAmmo(int32 Ammo, int32 Mag);
+	UFUNCTION(BlueprintCallable)
 		void ChangeAmmo(int32 Ammo, int32 Mag);
 	UFUNCTION(Server, WithValidation, Reliable)
 		void StartReload();

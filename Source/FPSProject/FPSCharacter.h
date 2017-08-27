@@ -126,14 +126,18 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	//Entry. Called when player presses a key to collect pickups
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION(Reliable,Server, WithValidation,Category = "Weapon")
 		void PickupWeapon();
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void PickupEquipment();
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void DropWeapon();
-	UFUNCTION(Server,Reliable,WithValidation, Category = "Weapon")
+	UFUNCTION(Server,Reliable,WithValidation, Category = "Equipment")
 		void ServerDropEquipment();
+	UFUNCTION()
+		void DropEquipment();
+	UFUNCTION(Client, Reliable, WithValidation, Category = "Equipment")
+		void ClientDropEquipment();
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void FireAgain();
 	UPROPERTY(EditDefaultsOnly, Category = "Health")
@@ -141,10 +145,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Health")
 		float CurrentHealth;
 	//called on server to process the collection of pickups
-	UFUNCTION(Reliable, Server, WithValidation)
+	UFUNCTION(Reliable, NetMulticast, WithValidation)
 		void ServerPickupWeapon();
 	UFUNCTION(Reliable, Server, WithValidation)
 		void ServerPickupEquipment();
+
 	UFUNCTION(Reliable, Server, WithValidation)
 		void ServerDropWeapon();
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
@@ -154,7 +159,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 		bool IsFiring;
-
+	UPROPERTY(EditAnywhere, Category = "death")
+		bool IsDead = false;
 	UPROPERTY(VisibleAnywhere)
 		TEnumAsByte<enum EPlayerState> CurrentState;
 public:

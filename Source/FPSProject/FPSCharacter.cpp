@@ -134,11 +134,7 @@ void AFPSCharacter::TriggerDeathUI_Implementation()
 
 }
 
-bool AFPSCharacter::ServerDropEquipment_Validate()
-{
-	return true;
-}
-void AFPSCharacter::ServerDropEquipment_Implementation()
+void AFPSCharacter::DropEquipment()
 {
 	if (Grenades.Num() > 0)
 	{
@@ -147,10 +143,30 @@ void AFPSCharacter::ServerDropEquipment_Implementation()
 			if (AFragGrenade* const frag = Cast<AFragGrenade>(Grenades[i]))
 			{
 				ABaseGrenade* Grenade = GetWorld()->SpawnActor<ABaseGrenade>(FragSUB, GetActorLocation() + GetActorForwardVector() * 100.0, FRotator::ZeroRotator);
-				Grenades.RemoveAt(i);
+				//Grenades.RemoveAt(i);
 			}
 		}
+		Grenades.Empty();
 	}
+}
+
+bool AFPSCharacter::ServerDropEquipment_Validate()
+{
+	return true;
+}
+void AFPSCharacter::ServerDropEquipment_Implementation()
+{
+	UE_LOG(LogClass, Log, TEXT("Client called ServerDropEquipment"));
+	DropEquipment();
+}
+bool AFPSCharacter::ClientDropEquipment_Validate()
+{
+	return true;
+}
+void AFPSCharacter::ClientDropEquipment_Implementation()
+{
+	UE_LOG(LogClass, Log, TEXT("Server called ClientDropEquipment"));
+	DropEquipment();
 }
 
 
@@ -166,9 +182,8 @@ void AFPSCharacter::SetCurrentState(EPlayerState NewState)
 }
 void AFPSCharacter::OnPlayerDeath_Implementation()
 {
-	DropWeapon();
-	SetCurrentState(EPlayerState::EPlayerDead);
-	ServerDropEquipment();
+	CollectionBox->bGenerateOverlapEvents = false;
+	GrenadeDetectionBox->bGenerateOverlapEvents = false;
 	TriggerDeathUI();
 	// disconnect controller from pawn
 	DetachFromControllerPendingDestroy();
@@ -193,6 +208,26 @@ void AFPSCharacter::OnPlayerDeath_Implementation()
 	//disable collisions on the capsule
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+	IsDead = true;
+	if (Role == ROLE_AutonomousProxy)
+	{
+		ServerDropWeapon();
+	}
+	else
+	{
+		DropWeapon();
+	}
+
+	SetCurrentState(EPlayerState::EPlayerDead);
+	if (Role == ROLE_AutonomousProxy)
+	{
+		ServerDropEquipment();
+	}
+	else
+	{
+		UE_LOG(LogClass, Log, TEXT("Server called DropEquipment"));
+		DropEquipment();
+	}
 	if (LastHitForce != NULL && LastHitDirection != FVector::ZeroVector)
 	{
 		if (LastHitBone != "")
@@ -220,6 +255,7 @@ void AFPSCharacter::OnPlayerDeath_Implementation()
 			}
 		}
 	}
+
 
 
 }
@@ -571,8 +607,14 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 
 
 					}
-					CurrentPrimary->ChangeAmmo(CurrentPrimary->TotalAmmo, CurrentPrimary->AmmoLeftInMag - 1);
-				
+					if (Role == ROLE_Authority)
+					{
+						CurrentPrimary->ChangeAmmo(CurrentPrimary->TotalAmmo, CurrentPrimary->AmmoLeftInMag - 1);
+					}
+					else
+					{
+						CurrentPrimary->ServerChangeAmmo(CurrentPrimary->TotalAmmo, CurrentPrimary->AmmoLeftInMag - 1);
+					}
 					if (IsZoomed == true)
 					{
 						if (simASV <= CurrentPrimary->ZoomMaxSpread)
@@ -636,129 +678,46 @@ void AFPSCharacter::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(UpdateTimer, this, &AFPSCharacter::Update, UpdateDelay, true);
 }
 
+bool AFPSCharacter::PickupWeapon_Validate()
+{
+	return true;
+}
 
-void AFPSCharacter::PickupWeapon()
+void AFPSCharacter::PickupWeapon_Implementation()
 {
 	ServerPickupWeapon();
 }
 void AFPSCharacter::DropWeapon()
 {
-	ServerDropWeapon();
+	if (AFPSGameState* const GameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
+	{
+		if (GameState->GetCurrentState() == EGamePlayState::EPlaying)
+		{
+
+
+
+			if (CurrentPrimary != NULL)
+			{
+				if (AGun* Gun = Cast<AGun>(CurrentPrimary))
+				{
+					Gun->DroppedBy(this);
+					CurrentPrimary = NULL;
+
+				}
+			}
+			
+		}
+	}
+	
 }
 void AFPSCharacter::PickupEquipment()
 {
-	
-	if (Role == ROLE_AutonomousProxy)
-	{
-		ServerPickupEquipment();
-	}
-	else
-	{
-		if (Role == ROLE_Authority)
-		{
-			if (AFPSGameState* const GameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
-			{
-				if (GameState->GetCurrentState() == EGamePlayState::EPlaying)
-				{
-
-
-					TArray<AActor*> PossibleEquipment;
-					CollectionBox->GetOverlappingActors(PossibleEquipment);
-					for (int32 i = 0; i < PossibleEquipment.Num(); ++i)
-					{
-
-						if (AGun* const Gun = Cast<AGun>(PossibleEquipment[i]))
-						{
-							
-							if (!Gun->IsPendingKill() && Gun->IsActive() && Gun->WeaponInstigator == NULL)
-							{
-								if (CurrentPrimary != NULL)
-								{
-									if (Gun != CurrentPrimary)
-									{
-										if (CurrentPrimary->GunName == Gun->GunName)
-										{
-											if (CurrentPrimary->TotalAmmo != CurrentPrimary->MaxAmmo)
-											{
-												int32 AmmoNeeded = CurrentPrimary->MaxAmmo - CurrentPrimary->TotalAmmo;
-												if (Gun->TotalAmmo >= AmmoNeeded)
-												{
-													Gun->ChangeAmmo(Gun->TotalAmmo - AmmoNeeded, Gun->MagazineSize);
-													CurrentPrimary->ChangeAmmo(CurrentPrimary->MaxAmmo, CurrentPrimary->AmmoLeftInMag);
-
-												}
-												else
-												{
-													CurrentPrimary->ChangeAmmo(CurrentPrimary->TotalAmmo + Gun->TotalAmmo, CurrentPrimary->AmmoLeftInMag);
-													Gun->ChangeAmmo(0, Gun->AmmoLeftInMag);
-												}
-												UE_LOG(LogClass, Log, TEXT("PickedUpAmmo"));
-											}
-										}
-									}
-								}
-							}
-						}
-
-						if (ABaseGrenade* const Grenade = Cast<ABaseGrenade>(PossibleEquipment[i]))
-						{
-							if (!Grenade->IsPendingKill() && !Grenade->bIsActive)
-							{
-								Grenades.Add(Grenade);
-								Grenade->Destroy();
-							}
-						}
-					}
-					//}
-				}
-			}
-		}
-	}
-	
-}
-
-
-bool AFPSCharacter::ServerDropWeapon_Validate()
-{
-	return true;
-}
-
-void AFPSCharacter::ServerDropWeapon_Implementation()
-{
 	if (AFPSGameState* const GameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
 	{
 		if (GameState->GetCurrentState() == EGamePlayState::EPlaying)
 		{
 
 
-			if (Role == ROLE_Authority)
-			{
-				if (CurrentPrimary != NULL)
-				{
-					if (AGun* Gun = Cast<AGun>(CurrentPrimary))
-					{
-						Gun->DroppedBy(this);
-						CurrentPrimary = NULL;
-						
-					}
-				}
-			}
-		}
-	}
-}
-
-bool AFPSCharacter::ServerPickupEquipment_Validate()
-{
-	return true;
-}
-void AFPSCharacter::ServerPickupEquipment_Implementation()
-{
-	if (AFPSGameState* const GameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
-	{
-		if (GameState->GetCurrentState() == EGamePlayState::EPlaying)
-		{
-
-				
 			TArray<AActor*> PossibleEquipment;
 			CollectionBox->GetOverlappingActors(PossibleEquipment);
 			for (int32 i = 0; i < PossibleEquipment.Num(); ++i)
@@ -779,16 +738,36 @@ void AFPSCharacter::ServerPickupEquipment_Implementation()
 										int32 AmmoNeeded = CurrentPrimary->MaxAmmo - CurrentPrimary->TotalAmmo;
 										if (Gun->TotalAmmo >= AmmoNeeded)
 										{
-											Gun->ChangeAmmo(Gun->TotalAmmo - AmmoNeeded, Gun->MagazineSize);
-											CurrentPrimary->ChangeAmmo(CurrentPrimary->MaxAmmo, CurrentPrimary->AmmoLeftInMag);
+											if (Role == ROLE_Authority)
+											{
+												UE_LOG(LogClass, Log, TEXT("This is Server Picking up Ammo"));
+												Gun->ChangeAmmo(Gun->TotalAmmo - AmmoNeeded, Gun->MagazineSize);
+												CurrentPrimary->ChangeAmmo(CurrentPrimary->MaxAmmo, CurrentPrimary->AmmoLeftInMag);
+											}
+											else
+											{
+												Gun->ServerChangeAmmo(Gun->TotalAmmo - AmmoNeeded, Gun->MagazineSize);
+												CurrentPrimary->ServerChangeAmmo(CurrentPrimary->MaxAmmo, CurrentPrimary->AmmoLeftInMag);
+											}
+
 
 										}
 										else
 										{
-											CurrentPrimary->ChangeAmmo(CurrentPrimary->TotalAmmo + Gun->TotalAmmo, CurrentPrimary->AmmoLeftInMag);
-											Gun->ChangeAmmo(0, Gun->AmmoLeftInMag);
+											if (Role == ROLE_Authority)
+											{
+												UE_LOG(LogClass, Log, TEXT("This is Server Picking up Ammo"));
+												CurrentPrimary->ChangeAmmo(CurrentPrimary->TotalAmmo + Gun->TotalAmmo, CurrentPrimary->AmmoLeftInMag);
+												Gun->ChangeAmmo(0, Gun->AmmoLeftInMag);
+											}
+											else
+											{
+												CurrentPrimary->ServerChangeAmmo(CurrentPrimary->TotalAmmo + Gun->TotalAmmo, CurrentPrimary->AmmoLeftInMag);
+												Gun->ServerChangeAmmo(0, Gun->AmmoLeftInMag);
+											}
+
 										}
-										UE_LOG(LogClass, Log, TEXT("PickedUpAmmo"));
+										
 									}
 								}
 							}
@@ -799,15 +778,38 @@ void AFPSCharacter::ServerPickupEquipment_Implementation()
 				{
 					if (!Grenade->IsPendingKill() && !Grenade->bPendingExplode)
 					{
-						
+
 						Grenades.Add(Grenade);
 						Grenade->Destroy();
 					}
 				}
 			}
-			//}
+			
 		}
 	}
+	
+}
+
+
+bool AFPSCharacter::ServerDropWeapon_Validate()
+{
+	return true;
+}
+
+void AFPSCharacter::ServerDropWeapon_Implementation()
+{
+	DropWeapon();
+}
+
+
+
+bool AFPSCharacter::ServerPickupEquipment_Validate()
+{
+	return true;
+}
+void AFPSCharacter::ServerPickupEquipment_Implementation()
+{
+	PickupEquipment();
 }
 
 bool AFPSCharacter::ServerPickupWeapon_Validate()
@@ -822,39 +824,43 @@ void AFPSCharacter::ServerPickupWeapon_Implementation()
 		if (GameState->GetCurrentState() == EGamePlayState::EPlaying)
 		{
 
-			if (Role == ROLE_Authority)
-			{
+			//if (Role == ROLE_Authority)
+			//{
 				// Get all overlapping actors and store them in an array
-				TArray<AActor*> CollectedActors;
-				CollectionBox->GetOverlappingActors(CollectedActors);
+			TArray<AActor*> CollectedActors;
+			CollectionBox->GetOverlappingActors(CollectedActors);
 
-				for (int i = 0; i < CollectedActors.Num(); ++i)
-				{
-					AGun* const Gun = Cast<AGun>(CollectedActors[i]);
-					if (Gun != NULL && !Gun->IsPendingKill() && Gun->IsActive() && Gun->WeaponInstigator == NULL) {
+			for (int i = 0; i < CollectedActors.Num(); ++i)
+			{
+				AGun* const Gun = Cast<AGun>(CollectedActors[i]);
+				if (Gun != NULL && !Gun->IsPendingKill() && Gun->IsActive() && Gun->WeaponInstigator == NULL) {
 
-						if (CurrentPrimary != NULL)
+					if (CurrentPrimary != NULL)
+					{
+						if (AGun* PrimaryGun = Cast<AGun>(CurrentPrimary))
 						{
-							if (AGun* PrimaryGun = Cast<AGun>(CurrentPrimary))
+
+
+							if (Gun->GunName == PrimaryGun->GunName)
 							{
-
-
-								if (Gun->GunName == PrimaryGun->GunName)
-								{
-									UE_LOG(LogClass, Log, TEXT("AlreadyHaveWeapon"));
-									return;
-								}
+								UE_LOG(LogClass, Log, TEXT("AlreadyHaveWeapon"));
+								return;
 							}
 						}
-						CurrentPrimary = Gun;
-						Gun->PickedUpBy(this);
-
-						UE_LOG(LogClass, Log, TEXT("Current Primary: %s"), *CurrentPrimary->GetName());
-						HasWeapon = true;
-
 					}
+					CurrentPrimary = Gun;
+					Gun->GetStaticMeshComponent()->SetSimulatePhysics(false);
+					//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);
+					Gun->AttachToComponent(FPSMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponLocation")));
+					Gun->PickedUpBy(this);
+
+					UE_LOG(LogClass, Log, TEXT("Current Primary: %s"), *CurrentPrimary->GetName());
+					HasWeapon = true;
+					break;
+
 				}
 			}
+			//}
 			
 		}
 	}
@@ -955,11 +961,18 @@ void AFPSCharacter::Tick(float DeltaTime)
 
 	TArray<AActor*> PossibleEquipment;
 	CollectionBox->GetOverlappingActors(PossibleEquipment);
-	if (PossibleEquipment.Num() > 0)
+	if (PossibleEquipment.Num() > 0 && !IsDead)
 	{
 		//if (Role == ROLE_AutonomousProxy)
 		//{
-		PickupEquipment();
+		if (Role == ROLE_AutonomousProxy)
+		{
+			ServerPickupEquipment();
+		}
+		else
+		{
+			PickupEquipment();
+		}
 
 
 		

@@ -56,12 +56,7 @@ bool AGun::EndReload_Validate()
 	return true;
 }
 
-bool AGun::ChangeAmmo_Validate(int32 Ammo, int32 Mag)
-{
-	return true;
-}
-
-void AGun::ChangeAmmo_Implementation(int32 Ammo, int32 Mag)
+void AGun::ChangeAmmo(int32 Ammo, int32 Mag)
 {
 	if (Role == ROLE_Authority)
 	{
@@ -77,8 +72,18 @@ void AGun::ChangeAmmo_Implementation(int32 Ammo, int32 Mag)
 	}
 	AmmoLeftInMag = Mag;
 	TotalAmmo = Ammo;
+}
+
+bool AGun::ServerChangeAmmo_Validate(int32 Ammo, int32 Mag)
+{
+	return true;
+}
+
+void AGun::ServerChangeAmmo_Implementation(int32 Ammo, int32 Mag)
+{
+
 	
-	//do something
+	ChangeAmmo(Ammo, Mag);
 }
 
 
@@ -209,9 +214,7 @@ void AGun::PickedUpBy(APawn * Pawn)
 
 		if (AFPSCharacter* const AttachedPlayer = Cast<AFPSCharacter>(Pawn)) {
 			UE_LOG(LogClass, Log, TEXT("%s was picked up by %s"), *GetName(), *Pawn->GetName());
-			GetStaticMeshComponent()->SetSimulatePhysics(false);
-			//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);
-			AttachToComponent(AttachedPlayer->FPSMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponLocation")));
+
 
 			//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")));
 			//this->AttachRootComponentTo(atta)
