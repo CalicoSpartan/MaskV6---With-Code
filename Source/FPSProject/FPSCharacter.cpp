@@ -531,7 +531,7 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 							FHitResult testhit;
 							if (World->LineTraceSingleByChannel(testhit, FPSCameraComponent->GetComponentLocation(), FPSCameraComponent->GetComponentLocation() + (-dirNormalized * CurrentPrimary->Range), ECollisionChannel::ECC_Visibility, QueryParams))
 							{
-								DrawDebugLine(World, CurrentPrimary->MuzzleLocation->GetComponentLocation(), testhit.Location, FColor::Black, false, 2.0f);
+								//DrawDebugLine(World, CurrentPrimary->MuzzleLocation->GetComponentLocation(), testhit.Location, FColor::Black, false, 2.0f);
 								UE_LOG(LogClass, Log, TEXT("We hit %s"), *testhit.GetActor()->GetName());
 								if (AFPSCharacter* const hitplayer = Cast<AFPSCharacter>(testhit.GetActor())) {
 									UE_LOG(LogClass, Log, TEXT("Distance: %f"), FVector::Dist(testhit.Location, CurrentPrimary->MuzzleLocation->GetComponentLocation()));
@@ -600,7 +600,7 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 							if (World->LineTraceSingleByChannel(testhit, FPSCameraComponent->GetComponentLocation(), FPSCameraComponent->GetComponentLocation() + (-dirNormalized * CurrentPrimary->Range), ECollisionChannel::ECC_Visibility, QueryParams))
 							{
 								//DrawDebugPoint(World, TestBulletLocation, 5, FColor::Black, false, 10.0f);
-								DrawDebugLine(World, CurrentPrimary->MuzzleLocation->GetComponentLocation(), testhit.Location, FColor::Black, false, 2.0f);
+								//DrawDebugLine(World, CurrentPrimary->MuzzleLocation->GetComponentLocation(), testhit.Location, FColor::Black, false, 2.0f);
 								UE_LOG(LogClass, Log, TEXT("We hit %s"), *testhit.GetActor()->GetName());
 								if (AFPSCharacter* const hitplayer = Cast<AFPSCharacter>(testhit.GetActor())) {
 									UE_LOG(LogClass, Log, TEXT("Distance: %f"), FVector::Dist(testhit.Location, CurrentPrimary->MuzzleLocation->GetComponentLocation()));
@@ -684,6 +684,26 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 						AccuracySpreadValue += CurrentPrimary->AccuracySpreadIncrease;
 						
 					}
+
+					if (Left_CHLocation != FVector::ZeroVector && Right_CHLocation != FVector::ZeroVector && Top_CHLocation != FVector::ZeroVector && Bottom_CHLocation != FVector::ZeroVector)
+					{
+						/*
+						DrawDebugLine(GetWorld(), Left_CHLocation, Left_CHLocation + FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range, FColor::Red, true);
+						DrawDebugLine(GetWorld(), Right_CHLocation, Right_CHLocation + FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range, FColor::Red, true);
+						DrawDebugLine(GetWorld(), Top_CHLocation, Top_CHLocation + FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range, FColor::Red, true);
+						DrawDebugLine(GetWorld(), Bottom_CHLocation, Bottom_CHLocation + FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range, FColor::Red, true);
+						*/
+
+
+						if (Left_CHDirection != FVector::ZeroVector && Right_CHDirection != FVector::ZeroVector && Top_CHDirection != FVector::ZeroVector && Bottom_CHDirection != FVector::ZeroVector)
+						{
+							DrawDebugLine(GetWorld(), Left_CHLocation, Left_CHLocation + Left_CHDirection.GetSafeNormal() * CurrentPrimary->Range, FColor::Red, true);
+							DrawDebugLine(GetWorld(), Right_CHLocation, Right_CHLocation + Right_CHDirection.GetSafeNormal() * CurrentPrimary->Range, FColor::Red, true);
+							DrawDebugLine(GetWorld(), Top_CHLocation, Top_CHLocation + Top_CHDirection.GetSafeNormal() * CurrentPrimary->Range, FColor::Red, true);
+							DrawDebugLine(GetWorld(), Bottom_CHLocation, Bottom_CHLocation + Bottom_CHDirection.GetSafeNormal() * CurrentPrimary->Range, FColor::Red, true);
+						}
+					}
+
 				}
 				if (CurrentPrimary->AmmoLeftInMag <= 0 && CurrentPrimary->TotalAmmo > 0)
 				{

@@ -94,6 +94,26 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float DefaultFOV;
 
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+		FVector Right_CHLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+		FVector Left_CHLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+		FVector Top_CHLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+		FVector Bottom_CHLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+		FVector Right_CHDirection;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+		FVector Left_CHDirection;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+		FVector Top_CHDirection;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+		FVector Bottom_CHDirection;
+
+
 	//handling player state
 	UFUNCTION(BlueprintPure)
 		EPlayerState GetCurrentState() const;
