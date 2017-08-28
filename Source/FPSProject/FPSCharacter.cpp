@@ -346,7 +346,9 @@ void AFPSCharacter::OnShoot()
 {
 
 	if (CurrentPrimary != NULL) {
+		SetShotMULTI(ShotStartLocation, ShotDirection);
 		ServerOnShoot();
+
 	}
 
 }
@@ -471,6 +473,30 @@ bool AFPSCharacter::ServerOnShoot_Validate()
 {
 	return true;
 }
+bool AFPSCharacter::GenerateShotMULTI_Validate()
+{
+	return true;
+}
+bool AFPSCharacter::SetShotMULTI_Validate(FVector Location, FVector Direction)
+{
+	return true;
+}
+
+void AFPSCharacter::SetShotMULTI_Implementation(FVector Location, FVector Direction)
+{
+	ShotStartLocation = Location;
+	ShotDirection = Direction;
+}
+void AFPSCharacter::SetShot(FVector Location, FVector Direction)
+{
+	SetShotMULTI(Location, Direction);
+}
+
+void AFPSCharacter::GenerateShotMULTI_Implementation()
+{
+	GenerateShot();
+}
+
 void AFPSCharacter::ServerOnShoot_Implementation()
 {
 	if (AFPSGameState* const GameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
@@ -486,6 +512,7 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 				FCollisionQueryParams QueryParams;
 				QueryParams.AddIgnoredActor(this);
 				if (CurrentPrimary->AmmoLeftInMag > 0 && IsFiring == false && CurrentPrimary->CanFire == true) {
+					
 					if (IsZoomed)
 					{
 						ServerAddGunRecoil(CurrentPrimary->ZoomRecoilValue);
@@ -514,103 +541,22 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 						BulletDestination = FPSCameraComponent->GetComponentLocation() + (FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range * AccuracyChange);
 						}
 						*/
-						if (World->LineTraceSingleByChannel(hit, FPSCameraComponent->GetComponentLocation(), FPSCameraComponent->GetComponentLocation() + (FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range), ECollisionChannel::ECC_Visibility, QueryParams)) {
-							//DrawDebugLine(World, CurrentPrimary->MuzzleLocation->GetComponentLocation(), hit.Location, FColor::Red, false, 3.0f);
-							float distancefactor = hit.Distance / 1000.0f;
-							float RandYSpread = FMath::RandRange(-simASV * distancefactor, +simASV * distancefactor);
-							float RandZSpread = FMath::RandRange(-simASV * distancefactor, +simASV * distancefactor);
-							float RandXSpread = FMath::RandRange(-simASV * distancefactor, +simASV * distancefactor);
-							//float VelocityFactor = GetVelocity().GetClampedToSize(1.0f, 2.0f).Size();
-							FVector AccuracyChange = FVector(RandXSpread, RandYSpread, RandZSpread);
-							//FPlane testplane = UKismetMathLibrary::MakePlaneFromPointAndNormal(hit.Location, hit.Normal);
-							//UKismetSystemLibrary::DrawDebugPlane(World, testplane, hit.Location, 100, FColor::Blue, 100.0f);
-							FVector TestBulletLocation = hit.Location + AccuracyChange;
-							//DrawDebugPoint(World, TestBulletLocation, 5, FColor::Black, false, 10.0f);
-							//DrawDebugLine(World, FPSCameraComponent->GetComponentLocation(), TestBulletLocation, FColor::Blue, false, 5.0f);
-							FVector dirNormalized = FVector(FPSCameraComponent->GetComponentLocation() - TestBulletLocation).GetSafeNormal();
 
-
-							FHitResult testhit;
-							if (World->LineTraceSingleByChannel(testhit, FPSCameraComponent->GetComponentLocation(), FPSCameraComponent->GetComponentLocation() + (-dirNormalized * CurrentPrimary->Range), ECollisionChannel::ECC_Visibility, QueryParams))
-							{
-								//DrawDebugLine(World, CurrentPrimary->MuzzleLocation->GetComponentLocation(), testhit.Location, FColor::Black, false, 2.0f);
-								UE_LOG(LogClass, Log, TEXT("We hit %s"), *testhit.GetActor()->GetName());
-								if (AFPSCharacter* const hitplayer = Cast<AFPSCharacter>(testhit.GetActor())) {
-									UE_LOG(LogClass, Log, TEXT("Distance: %f"), FVector::Dist(testhit.Location, CurrentPrimary->MuzzleLocation->GetComponentLocation()));
-									float ShotDistance = FVector::Dist(testhit.Location, CurrentPrimary->MuzzleLocation->GetComponentLocation());
-									float DamagePercent = 0;
-									if (ShotDistance <= CurrentPrimary->PreferredRange)
-									{
-										if (testhit.BoneName == FName("head"))
-										{
-											UE_LOG(LogClass, Log, TEXT("HEADSHOT"));
-											DamagePercent = CurrentPrimary->HeadShotIncrease;
-										}
-										else
-										{
-											DamagePercent = 1.0f;
-										}
-									}
-									else
-									{
-										float WeaponRangeDifference = CurrentPrimary->Range - CurrentPrimary->PreferredRange;
-										float ShotRangeDifference = CurrentPrimary->Range - ShotDistance;
-										float OppositePercentToZeroDamage = ShotRangeDifference / WeaponRangeDifference;
-										if (testhit.BoneName == FName("head"))
-										{
-											UE_LOG(LogClass, Log, TEXT("HEADSHOT"));
-											DamagePercent = roundf(OppositePercentToZeroDamage * CurrentPrimary->HeadShotIncrease * 100) / 100;
-										}
-										else
-										{
-											DamagePercent = roundf(OppositePercentToZeroDamage * 100) / 100;
-
-										}
-									}
-									UE_LOG(LogClass, Log, TEXT("DamagePercent: %f"), DamagePercent);
-									hitplayer->Shooter = this;
-									FVector BulletTrailDir = FVector(testhit.Location - testhit.TraceStart).GetSafeNormal();
-									hitplayer->SetHitData(CurrentPrimary->BulletForce, testhit.BoneName, BulletTrailDir);
-									hitplayer->ServerChangeHealthBy(-CurrentPrimary->BulletDamage * DamagePercent);
-									hitplayer->TriggerUpdateUI();
-									//UE_LOG(LogClass, Log, FString::SanitizeFloat(hitplayer->GetCurrentHealth());
-									//hitplayer->HealthPercentage = hitplayer->GetCurrentHealth() / hitplayer->GetInitialHealth();
-									GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Blue, FString::SanitizeFloat(hitplayer->GetCurrentHealth()));
-									GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Blue, FString::SanitizeFloat(hitplayer->HealthPercentage));
-									//UE_LOG(LogClass, Log, TEXT("%s health is now %s"), *hitplayer->GetName(), FString::SanitizeFloat(hitplayer->GetCurrentHealth()));
-								}
-							}
-						}
-						else
+						if (ShotStartLocation != FVector::ZeroVector && ShotDirection != FVector::ZeroVector)
 						{
-							//DrawDebugLine(World, CurrentPrimary->MuzzleLocation->GetComponentLocation(), FPSCameraComponent->GetComponentLocation() + (FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range), FColor::Red, false, 3.0f);
-							float distancefactor = CurrentPrimary->Range / 1000.0f;
-							float RandYSpread = FMath::RandRange(-simASV * distancefactor, +simASV * distancefactor);
-							float RandZSpread = FMath::RandRange(-simASV * distancefactor, +simASV * distancefactor);
-							float RandXSpread = FMath::RandRange(-simASV * distancefactor, +simASV * distancefactor);
-							//float VelocityFactor = GetVelocity().GetClampedToSize(1.0f, 2.0f).Size();
-							FVector AccuracyChange = FVector(RandXSpread, RandYSpread, RandZSpread);
-							//FPlane testplane = UKismetMathLibrary::MakePlaneFromPointAndNormal(hit.Location, hit.Normal);
-							//UKismetSystemLibrary::DrawDebugPlane(World, testplane, hit.Location, 100, FColor::Blue, 100.0f);
-							FVector TestBulletLocation = FPSCameraComponent->GetComponentLocation() + (FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range) + AccuracyChange;
+							
+							
 
-							//DrawDebugLine(World, FPSCameraComponent->GetComponentLocation(), TestBulletLocation, FColor::Blue, false, 5.0f);
-							FVector dirNormalized = FVector(FPSCameraComponent->GetComponentLocation() - TestBulletLocation).GetSafeNormal();
-
-
-							FHitResult testhit;
-							if (World->LineTraceSingleByChannel(testhit, FPSCameraComponent->GetComponentLocation(), FPSCameraComponent->GetComponentLocation() + (-dirNormalized * CurrentPrimary->Range), ECollisionChannel::ECC_Visibility, QueryParams))
+							if (World->LineTraceSingleByChannel(hit, ShotStartLocation, ShotStartLocation + ShotDirection.GetSafeNormal() * CurrentPrimary->Range, ECollisionChannel::ECC_Visibility, QueryParams))
 							{
-								//DrawDebugPoint(World, TestBulletLocation, 5, FColor::Black, false, 10.0f);
-								//DrawDebugLine(World, CurrentPrimary->MuzzleLocation->GetComponentLocation(), testhit.Location, FColor::Black, false, 2.0f);
-								UE_LOG(LogClass, Log, TEXT("We hit %s"), *testhit.GetActor()->GetName());
-								if (AFPSCharacter* const hitplayer = Cast<AFPSCharacter>(testhit.GetActor())) {
-									UE_LOG(LogClass, Log, TEXT("Distance: %f"), FVector::Dist(testhit.Location, CurrentPrimary->MuzzleLocation->GetComponentLocation()));
-									float ShotDistance = FVector::Dist(testhit.Location, CurrentPrimary->MuzzleLocation->GetComponentLocation());
+								DrawDebugLine(GetWorld(), CurrentPrimary->MuzzleLocation->GetComponentLocation(), hit.Location, FColor::Red, false, 2.0f);
+								if (AFPSCharacter* const hitplayer = Cast<AFPSCharacter>(hit.GetActor())) {
+									UE_LOG(LogClass, Log, TEXT("Distance: %f"), FVector::Dist(hit.Location, CurrentPrimary->MuzzleLocation->GetComponentLocation()));
+									float ShotDistance = FVector::Dist(hit.Location, CurrentPrimary->MuzzleLocation->GetComponentLocation());
 									float DamagePercent = 0;
 									if (ShotDistance <= CurrentPrimary->PreferredRange)
 									{
-										if (testhit.BoneName == FName("head"))
+										if (hit.BoneName == FName("head"))
 										{
 											UE_LOG(LogClass, Log, TEXT("HEADSHOT"));
 											DamagePercent = CurrentPrimary->HeadShotIncrease;
@@ -625,7 +571,7 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 										float WeaponRangeDifference = CurrentPrimary->Range - CurrentPrimary->PreferredRange;
 										float ShotRangeDifference = CurrentPrimary->Range - ShotDistance;
 										float OppositePercentToZeroDamage = ShotRangeDifference / WeaponRangeDifference;
-										if (testhit.BoneName == FName("head"))
+										if (hit.BoneName == FName("head"))
 										{
 											UE_LOG(LogClass, Log, TEXT("HEADSHOT"));
 											DamagePercent = roundf(OppositePercentToZeroDamage * CurrentPrimary->HeadShotIncrease * 100) / 100;
@@ -636,13 +582,11 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 
 										}
 									}
-									hitplayer->ServerChangeHealthBy(-CurrentPrimary->BulletDamage * DamagePercent);
-									FVector BulletTrailDir = FVector(testhit.Location - testhit.TraceStart).GetSafeNormal();
-									hitplayer->SetHitData(CurrentPrimary->BulletForce, testhit.BoneName, BulletTrailDir);
 									UE_LOG(LogClass, Log, TEXT("DamagePercent: %f"), DamagePercent);
 									hitplayer->Shooter = this;
-
-
+									FVector BulletTrailDir = FVector(hit.Location - hit.TraceStart).GetSafeNormal();
+									hitplayer->SetHitData(CurrentPrimary->BulletForce, hit.BoneName, BulletTrailDir);
+									hitplayer->ServerChangeHealthBy(-CurrentPrimary->BulletDamage * DamagePercent);
 									hitplayer->TriggerUpdateUI();
 									//UE_LOG(LogClass, Log, FString::SanitizeFloat(hitplayer->GetCurrentHealth());
 									//hitplayer->HealthPercentage = hitplayer->GetCurrentHealth() / hitplayer->GetInitialHealth();
@@ -650,8 +594,15 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 									GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Blue, FString::SanitizeFloat(hitplayer->HealthPercentage));
 									//UE_LOG(LogClass, Log, TEXT("%s health is now %s"), *hitplayer->GetName(), FString::SanitizeFloat(hitplayer->GetCurrentHealth()));
 								}
+
 							}
+							else
+							{
+								DrawDebugLine(GetWorld(), CurrentPrimary->MuzzleLocation->GetComponentLocation(), ShotStartLocation + ShotDirection.GetSafeNormal() * CurrentPrimary->Range, FColor::Red, false, 2.0f);
+							}
+							
 						}
+						
 
 
 					}
@@ -707,6 +658,7 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 							*/
 						}
 					}
+
 
 				}
 				if (CurrentPrimary->AmmoLeftInMag <= 0 && CurrentPrimary->TotalAmmo > 0)
@@ -963,7 +915,22 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFPSCharacter, LastHitDirection);
 	DOREPLIFETIME(AFPSCharacter, bIsNearGrenade);
 	DOREPLIFETIME(AFPSCharacter, Grenades);
-
+	
+	DOREPLIFETIME(AFPSCharacter, Right_CHLocation);
+	DOREPLIFETIME(AFPSCharacter, Top_CHLocation);
+	DOREPLIFETIME(AFPSCharacter, Left_CHLocation);
+	DOREPLIFETIME(AFPSCharacter, Bottom_CHLocation);
+	DOREPLIFETIME(AFPSCharacter, Right_CHDirection);
+	DOREPLIFETIME(AFPSCharacter, Left_CHDirection);
+	DOREPLIFETIME(AFPSCharacter, Top_CHDirection);
+	DOREPLIFETIME(AFPSCharacter, Bottom_CHDirection);
+	DOREPLIFETIME(AFPSCharacter, ShotStartLocation);
+	DOREPLIFETIME(AFPSCharacter, ShotDirection);
+	DOREPLIFETIME(AFPSCharacter, ShotLocation_MaxX);
+	DOREPLIFETIME(AFPSCharacter, ShotLocation_MinX);
+	DOREPLIFETIME(AFPSCharacter, ShotLocation_MaxY);
+	DOREPLIFETIME(AFPSCharacter, ShotLocation_MinY);
+	
 }
 
 bool AFPSCharacter::GrenadeNearby_Validate()

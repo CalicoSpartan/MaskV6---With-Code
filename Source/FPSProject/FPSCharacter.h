@@ -96,22 +96,35 @@ public:
 
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
 		FVector Right_CHLocation;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
 		FVector Left_CHLocation;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
 		FVector Top_CHLocation;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
 		FVector Bottom_CHLocation;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
 		FVector Right_CHDirection;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
 		FVector Left_CHDirection;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
 		FVector Top_CHDirection;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
 		FVector Bottom_CHDirection;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+		FVector ShotStartLocation;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+		FVector ShotDirection;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+		float ShotLocation_MaxX;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+		float ShotLocation_MaxY;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+		float ShotLocation_MinX;
+	UPROPERTY(Replicated,EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+		float ShotLocation_MinY;
+
 
 
 	//handling player state
@@ -120,6 +133,14 @@ public:
 	void SetCurrentState(EPlayerState NewState);
 	UFUNCTION(BlueprintCallable, Category = "Health")
 		float GetCurrentHealth();
+	UFUNCTION(BlueprintImplementableEvent)
+		void GenerateShot();
+	UFUNCTION(BlueprintCallable)
+		void SetShot(FVector Location,FVector Direction);
+	UFUNCTION(Server,WithValidation,Reliable)
+		void SetShotMULTI(FVector Location, FVector Direction);
+	UFUNCTION(Server,WithValidation,Reliable)
+		void GenerateShotMULTI();
 	UFUNCTION(Reliable, NetMultiCast, WithValidation, Category = "Health")
 		void Zoom();
 	UFUNCTION(Reliable, NetMultiCast, WithValidation, Category = "Health")
