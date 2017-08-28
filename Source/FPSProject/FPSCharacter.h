@@ -144,6 +144,11 @@ public:
 	UFUNCTION(NetMultiCast, Reliable) //multicast function happens on server and clients so everyone will see the player ragdoll
 		void SetHitData(float Force,FName Bone,FVector Direction);
 
+	UFUNCTION(NetMulticast, Reliable)
+		void DropWeapon();
+	UFUNCTION(NetMulticast,Reliable)
+		void DropEquipment();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -152,12 +157,10 @@ protected:
 		void PickupWeapon();
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void PickupEquipment();
-	UFUNCTION(Category = "Weapon")
-		void DropWeapon();
+
 	UFUNCTION(Server,Reliable,WithValidation, Category = "Equipment")
 		void ServerDropEquipment();
-	UFUNCTION()
-		void DropEquipment();
+
 	UFUNCTION(Client, Reliable, WithValidation, Category = "Equipment")
 		void ClientDropEquipment();
 	UFUNCTION(BlueprintCallable, Category = "Weapon")

@@ -561,6 +561,8 @@ void AFPSGameState::Update()
 						*/
 
 						CallHUDUpdate();
+						Player->DropWeapon();
+						Player->DropEquipment();
 						Player->OnPlayerDeath();
 
 	

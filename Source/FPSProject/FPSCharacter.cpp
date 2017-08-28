@@ -132,7 +132,7 @@ void AFPSCharacter::TriggerDeathUI_Implementation()
 
 }
 
-void AFPSCharacter::DropEquipment()
+void AFPSCharacter::DropEquipment_Implementation()
 {
 	if (Grenades.Num() > 0)
 	{
@@ -239,6 +239,7 @@ void AFPSCharacter::OnPlayerDeath_Implementation()
 		UE_LOG(LogClass, Log, TEXT("Im A Client"));
 	}
 	*/
+	/*
 	//////drop weapon
 	if (AFPSGameState* const GameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
 	{
@@ -273,6 +274,7 @@ void AFPSCharacter::OnPlayerDeath_Implementation()
 		}
 		Grenades.Empty();
 	}
+	*/
 
 	if (LastHitForce != NULL && LastHitDirection != FVector::ZeroVector)
 	{
@@ -697,10 +699,12 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 
 						if (Left_CHDirection != FVector::ZeroVector && Right_CHDirection != FVector::ZeroVector && Top_CHDirection != FVector::ZeroVector && Bottom_CHDirection != FVector::ZeroVector)
 						{
+							/*
 							DrawDebugLine(GetWorld(), Left_CHLocation, Left_CHLocation + Left_CHDirection.GetSafeNormal() * CurrentPrimary->Range, FColor::Red, true);
 							DrawDebugLine(GetWorld(), Right_CHLocation, Right_CHLocation + Right_CHDirection.GetSafeNormal() * CurrentPrimary->Range, FColor::Red, true);
 							DrawDebugLine(GetWorld(), Top_CHLocation, Top_CHLocation + Top_CHDirection.GetSafeNormal() * CurrentPrimary->Range, FColor::Red, true);
 							DrawDebugLine(GetWorld(), Bottom_CHLocation, Bottom_CHLocation + Bottom_CHDirection.GetSafeNormal() * CurrentPrimary->Range, FColor::Red, true);
+							*/
 						}
 					}
 
@@ -755,7 +759,7 @@ void AFPSCharacter::PickupWeapon_Implementation()
 {
 	ServerPickupWeapon();
 }
-void AFPSCharacter::DropWeapon()
+void AFPSCharacter::DropWeapon_Implementation()
 {
 	if (AFPSGameState* const GameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
 	{
