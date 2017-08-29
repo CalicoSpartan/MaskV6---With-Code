@@ -7,6 +7,7 @@
 #include "Components/BoxComponent.h"
 #include "BaseGrenade.h"
 #include "FragGrenade.h"
+#include "Runtime/Engine/Classes/PhysicsEngine/PhysicsConstraintComponent.h"
 
 #include "Runtime/Engine/Public/CollisionQueryParams.h"
 #include "FPSGameState.h"
@@ -37,6 +38,11 @@ class FPSPROJECT_API AFPSCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AFPSCharacter();
+
+	UPROPERTY(EditAnywhere)
+		UPhysicsConstraintComponent* ConstraintComp1;
+
+
 	UFUNCTION()
 		void Update();
 	UPROPERTY(EditAnywhere, Category = "Update")

@@ -46,6 +46,11 @@ AFPSCharacter::AFPSCharacter()
 	GrenadeDetectionBox->bGenerateOverlapEvents = true;
 
 
+	ConstraintComp1 = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("ConstraintComp1"));
+	//ConstraintComp1->ConstraintInstance = ConstraintInstance;
+	//ConstraintComp1->SetWorldLocation(GetActorLocation());
+
+
 
 	//set base weapon values
 	IsFiring = false;
