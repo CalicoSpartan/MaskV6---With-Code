@@ -7,7 +7,6 @@
 #include "Components/BoxComponent.h"
 #include "BaseGrenade.h"
 #include "FragGrenade.h"
-#include "Runtime/Engine/Classes/PhysicsEngine/PhysicsConstraintComponent.h"
 
 #include "Runtime/Engine/Public/CollisionQueryParams.h"
 #include "FPSGameState.h"
@@ -39,8 +38,8 @@ public:
 	// Sets default values for this character's properties
 	AFPSCharacter();
 
-	UPROPERTY(EditAnywhere)
-		UPhysicsConstraintComponent* ConstraintComp1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+		TArray<class AGun*> MyWeapons;
 
 
 	UFUNCTION()
@@ -99,7 +98,8 @@ public:
 		float HealthPercentage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float DefaultFOV;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category = "Weapon")
+		int32 MaxNumberOfWeapons = 2;
 
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
@@ -182,6 +182,8 @@ protected:
 	//Entry. Called when player presses a key to collect pickups
 	UFUNCTION(Reliable,Server, WithValidation,Category = "Weapon")
 		void PickupWeapon();
+	UFUNCTION(Reliable, Server, WithValidation, Category = "Weapon")
+		void SwitchWeapon();
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void PickupEquipment();
 
@@ -199,6 +201,8 @@ protected:
 	//called on server to process the collection of pickups
 	UFUNCTION(Reliable, NetMulticast, WithValidation)
 		void ServerPickupWeapon();
+	UFUNCTION(Reliable, NetMulticast)
+		void ServerSwitchWeapon();
 	UFUNCTION(Reliable, Server, WithValidation)
 		void ServerPickupEquipment();
 

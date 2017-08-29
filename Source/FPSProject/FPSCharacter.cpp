@@ -46,9 +46,8 @@ AFPSCharacter::AFPSCharacter()
 	GrenadeDetectionBox->bGenerateOverlapEvents = true;
 
 
-	ConstraintComp1 = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("ConstraintComp1"));
-	//ConstraintComp1->ConstraintInstance = ConstraintInstance;
-	//ConstraintComp1->SetWorldLocation(GetActorLocation());
+
+
 
 
 
@@ -707,6 +706,20 @@ void AFPSCharacter::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(UpdateTimer, this, &AFPSCharacter::Update, UpdateDelay, true);
 }
 
+bool AFPSCharacter::SwitchWeapon_Validate()
+{
+	return true;
+}
+
+void AFPSCharacter::SwitchWeapon_Implementation()
+{
+	ServerSwitchWeapon();
+}
+void AFPSCharacter::ServerSwitchWeapon_Implementation()
+{
+
+}
+
 bool AFPSCharacter::PickupWeapon_Validate()
 {
 	return true;
@@ -729,6 +742,7 @@ void AFPSCharacter::DropWeapon_Implementation()
 			{
 				if (AGun* Gun = Cast<AGun>(CurrentPrimary))
 				{
+					MyWeapons.Remove(Gun);
 					Gun->DroppedBy(this);
 					CurrentPrimary = NULL;
 
@@ -879,6 +893,13 @@ void AFPSCharacter::ServerPickupWeapon_Implementation()
 								UE_LOG(LogClass, Log, TEXT("AlreadyHaveWeapon"));
 								return;
 							}
+							else
+							{
+								if (MyWeapons.Num() >= MaxNumberOfWeapons)
+								{
+									DropWeapon();
+								}
+							}
 						}
 					}
 					CurrentPrimary = Gun;
@@ -886,7 +907,7 @@ void AFPSCharacter::ServerPickupWeapon_Implementation()
 					//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);
 					Gun->AttachToComponent(FPSMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponLocation")));
 					Gun->PickedUpBy(this);
-
+					MyWeapons.Insert(Gun,0);
 					UE_LOG(LogClass, Log, TEXT("Current Primary: %s"), *CurrentPrimary->GetName());
 					HasWeapon = true;
 					break;
