@@ -13,7 +13,7 @@
 AFPSProjectGameModeBase::AFPSProjectGameModeBase()
 {
 
-
+	/*
 	// set default pawn class to our Blueprinted character
 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/Blueprints/BP_FPSCharacter"));
 	if (PlayerPawnBPClass.Class != NULL)
@@ -26,7 +26,7 @@ AFPSProjectGameModeBase::AFPSProjectGameModeBase()
 	if (PlayerHUDClass.Class != NULL) {
 		HUDClass = PlayerHUDClass.Class;
 	}
-
+	*/
 
 	Team1Players = 0;
 	Team2Players = 0;
