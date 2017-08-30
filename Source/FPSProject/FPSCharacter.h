@@ -157,6 +157,10 @@ public:
 		float GetInitialHealth();
 	UFUNCTION(NetMultiCast, Reliable, Category = "Health")
 		void ServerChangeHealthBy(float delta);
+	UFUNCTION(BlueprintCallable,Category = "Health")
+		void BeginRechargeHealth();
+	UFUNCTION(BlueprintCallable, Category = "Health")
+		void RechargeHealth();
 	//required network scaffolding
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	UPROPERTY(Replicated, EditAnywhere, Category = "Damage")
@@ -173,7 +177,7 @@ public:
 	UFUNCTION(NetMultiCast, Reliable) //multicast function happens on server and clients so everyone will see the player ragdoll
 		void SetHitData(float Force,FName Bone,FVector Direction);
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION()//NetMulticast, Reliable)
 		void DropWeapon();
 	UFUNCTION(NetMulticast,Reliable)
 		void DropEquipment();
@@ -203,6 +207,10 @@ protected:
 		float InitialHealth;
 	UPROPERTY(EditDefaultsOnly, Category = "Health")
 		float CurrentHealth;
+	UPROPERTY(EditDefaultsOnly, Category = "Health")
+		float HealthRechargeDelay = 5.0f;
+	UPROPERTY(EditDefaultsOnly, Category = "Health")
+		float HealthRechargeSpeed = 3.0f;
 	//called on server to process the collection of pickups
 	UFUNCTION(Reliable, NetMulticast, WithValidation)
 		void ServerPickupWeapon();
@@ -217,17 +225,22 @@ protected:
 		FTimerHandle WeaponFireRateTimer;
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 		FTimerHandle ZoomTimer;
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+		FTimerHandle HealthRechargeTimer;
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+		FTimerHandle HealthRechargeDELTATimer;
+
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 		bool IsFiring;
-	UPROPERTY(EditAnywhere, Category = "death")
-		bool IsDead = false;
+
 	UPROPERTY(VisibleAnywhere)
 		TEnumAsByte<enum EPlayerState> CurrentState;
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	UPROPERTY(Replicated,EditAnywhere, Category = "death")
+		bool IsDead = false;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

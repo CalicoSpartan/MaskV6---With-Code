@@ -201,6 +201,7 @@ void AFPSCharacter::ServerOnPlayerDeath_Implementation()
 
 void AFPSCharacter::OnPlayerDeath_Implementation()
 {
+	
 	CollectionBox->bGenerateOverlapEvents = false;
 	GrenadeDetectionBox->bGenerateOverlapEvents = false;
 	TriggerDeathUI();
@@ -291,6 +292,7 @@ void AFPSCharacter::OnPlayerDeath_Implementation()
 			GetMesh()->AddForce(LastHitDirection);
 		}
 	}
+	DropWeapon();
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		if (Iterator->Get()->AcknowledgedPawn == this) {
@@ -317,12 +319,48 @@ float AFPSCharacter::GetCurrentHealth()
 	return CurrentHealth;
 }
 
+void AFPSCharacter::BeginRechargeHealth()
+{
+	GetWorld()->GetTimerManager().SetTimer(HealthRechargeDELTATimer, this, &AFPSCharacter::RechargeHealth, .01f, true);
+}
 
+
+void AFPSCharacter::RechargeHealth()
+{
+	if (GetCurrentHealth() < GetInitialHealth())
+	{
+		if (GetCurrentHealth() + DELTA * HealthRechargeSpeed > GetInitialHealth())
+		{
+			ServerChangeHealthBy(GetInitialHealth() - GetCurrentHealth());
+		}
+		else
+		{
+			ServerChangeHealthBy(DELTA * HealthRechargeSpeed * 100.0f);
+		}
+	}
+	if (GetCurrentHealth() > GetInitialHealth())
+	{
+		ServerChangeHealthBy(GetInitialHealth() - GetCurrentHealth());
+		GetWorld()->GetTimerManager().ClearTimer(HealthRechargeTimer);
+		GetWorld()->GetTimerManager().ClearTimer(HealthRechargeDELTATimer);
+	}
+}
 
 void AFPSCharacter::ServerChangeHealthBy_Implementation(float delta)
 {
 	CurrentHealth += delta;
 	HealthPercentage = CurrentHealth / InitialHealth;
+	if (delta > 0.0f)
+	{
+
+	}
+	else
+	{
+		GetWorld()->GetTimerManager().ClearTimer(HealthRechargeTimer);
+		GetWorld()->GetTimerManager().SetTimer(HealthRechargeTimer, this, &AFPSCharacter::BeginRechargeHealth, HealthRechargeDelay, false);
+
+	}
+	TriggerUpdateUI();
 
 }
 float AFPSCharacter::GetInitialHealth()
@@ -591,7 +629,7 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 									FVector BulletTrailDir = FVector(hit.Location - hit.TraceStart).GetSafeNormal();
 									hitplayer->SetHitData(CurrentPrimary->BulletForce, hit.BoneName, BulletTrailDir);
 									hitplayer->ServerChangeHealthBy(-CurrentPrimary->BulletDamage * DamagePercent);
-									hitplayer->TriggerUpdateUI();
+									
 									//UE_LOG(LogClass, Log, FString::SanitizeFloat(hitplayer->GetCurrentHealth());
 									//hitplayer->HealthPercentage = hitplayer->GetCurrentHealth() / hitplayer->GetInitialHealth();
 									GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Blue, FString::SanitizeFloat(hitplayer->GetCurrentHealth()));
@@ -775,23 +813,44 @@ void AFPSCharacter::PickupWeapon_Implementation()
 {
 	ServerPickupWeapon();
 }
-void AFPSCharacter::DropWeapon_Implementation()
+void AFPSCharacter::DropWeapon()//_Implementation()
 {
 	if (AFPSGameState* const GameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
 	{
 		if (GameState->GetCurrentState() == EGamePlayState::EPlaying)
 		{
-
-
-
-			if (CurrentPrimary != NULL)
+			UE_LOG(LogClass, Log, TEXT("HowManyWeapons: %d"), MyWeapons.Num());
+			if (IsDead)
 			{
-				if (AGun* Gun = Cast<AGun>(CurrentPrimary))
+				//GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
+				
+				for (int32 i = 0; i < MyWeapons.Num(); ++i)
 				{
-					MyWeapons.Remove(Gun);
-					Gun->DroppedBy(this);
-					CurrentPrimary = NULL;
+					if (AGun* Gun = Cast<AGun>(MyWeapons[i]))
+					{
+						//Gun->AttachToComponent(FPSMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponLocation")));
+						UE_LOG(LogClass, Log, TEXT("Dropping: %s"),*Gun->GetName());
+						Gun->GetStaticMeshComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
+						Gun->DroppedBy(this);
 
+						
+					}
+				
+				}
+				MyWeapons.Empty();
+			}
+			else
+			{
+
+				if (CurrentPrimary != NULL)
+				{
+					if (AGun* Gun = Cast<AGun>(CurrentPrimary))
+					{
+						MyWeapons.Remove(CurrentPrimary);
+						Gun->DroppedBy(this);
+						CurrentPrimary = NULL;
+
+					}
 				}
 			}
 			
@@ -1008,6 +1067,7 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AFPSCharacter, GrenadeThrowStrength);
+	DOREPLIFETIME(AFPSCharacter, IsDead);
 	DOREPLIFETIME(AFPSCharacter, GrenadeThrowUpForce);
 	DOREPLIFETIME(AFPSCharacter, simASV);
 	DOREPLIFETIME(AFPSCharacter, FPSMesh);
