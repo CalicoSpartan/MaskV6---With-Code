@@ -717,6 +717,52 @@ void AFPSCharacter::SwitchWeapon_Implementation()
 }
 void AFPSCharacter::ServerSwitchWeapon_Implementation()
 {
+	if (AFPSGameState* const GameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
+	{
+		if (GameState->GetCurrentState() == EGamePlayState::EPlaying)
+		{
+			if (CurrentPrimary != NULL)
+			{
+				if (MyWeapons.Num() > 1)
+				{
+					int32 PrimaryIndex = MyWeapons.Find(CurrentPrimary);
+					if (PrimaryIndex != MyWeapons.Num() - 1)
+					{
+						if (AGun* SecondaryGun = Cast<AGun>(MyWeapons[PrimaryIndex + 1]))
+						{
+							CurrentPrimary->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+							CurrentPrimary->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponSocket1")));
+							
+							//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);
+							SecondaryGun->AttachToComponent(FPSMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponLocation")));
+							CurrentPrimary = SecondaryGun;
+						}
+					}
+					else
+					{
+						if (AGun* SecondaryGun = Cast<AGun>(MyWeapons[0]))
+						{
+							CurrentPrimary->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+							CurrentPrimary->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponSocket1")));
+
+							//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);
+							SecondaryGun->AttachToComponent(FPSMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponLocation")));
+							CurrentPrimary = SecondaryGun;
+						}
+					}
+				}
+				else
+				{
+					//if (PickingUpWeapon == true)
+					//{
+					//CurrentPrimary->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+					//CurrentPrimary->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponSocket1")));
+						
+					//}
+				}
+			}
+		}
+	}
 
 }
 
@@ -753,6 +799,10 @@ void AFPSCharacter::DropWeapon_Implementation()
 	}
 	
 }
+void AFPSCharacter::SetPickingUpWeapon_Implementation(bool IsPickingUpWeapon)
+{
+	PickingUpWeapon = IsPickingUpWeapon;
+}
 void AFPSCharacter::PickupEquipment()
 {
 	if (AFPSGameState* const GameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
@@ -770,51 +820,61 @@ void AFPSCharacter::PickupEquipment()
 				{
 					if (!Gun->IsPendingKill() && Gun->IsActive() && Gun->WeaponInstigator == NULL)
 					{
-						if (CurrentPrimary != NULL)
+
+						for (int32 i = 0; i < MyWeapons.Num(); ++i)
 						{
-							if (Gun != CurrentPrimary)
+							if (AGun* MyWeapon = Cast<AGun>(MyWeapons[i]))
 							{
-								if (CurrentPrimary->GunName == Gun->GunName)
+
+
+
+								if (MyWeapon != NULL)
 								{
-									if (CurrentPrimary->TotalAmmo != CurrentPrimary->MaxAmmo)
+									if (Gun != MyWeapon)
 									{
-										int32 AmmoNeeded = CurrentPrimary->MaxAmmo - CurrentPrimary->TotalAmmo;
-										if (Gun->TotalAmmo >= AmmoNeeded)
+										if (MyWeapon->GunName == Gun->GunName)
 										{
-											if (Role == ROLE_Authority)
+											if (MyWeapon->TotalAmmo != MyWeapon->MaxAmmo)
 											{
-												UE_LOG(LogClass, Log, TEXT("This is Server Picking up Ammo"));
-												Gun->ChangeAmmo(Gun->TotalAmmo - AmmoNeeded, Gun->MagazineSize);
-												CurrentPrimary->ChangeAmmo(CurrentPrimary->MaxAmmo, CurrentPrimary->AmmoLeftInMag);
-											}
-											/*
-											else
-											{
-												Gun->ServerChangeAmmo(Gun->TotalAmmo - AmmoNeeded, Gun->MagazineSize);
-												CurrentPrimary->ServerChangeAmmo(CurrentPrimary->MaxAmmo, CurrentPrimary->AmmoLeftInMag);
-											}
-											*/
+												int32 AmmoNeeded = MyWeapon->MaxAmmo - MyWeapon->TotalAmmo;
+												if (Gun->TotalAmmo >= AmmoNeeded)
+												{
+													if (Role == ROLE_Authority)
+													{
+														UE_LOG(LogClass, Log, TEXT("This is Server Picking up Ammo"));
+														Gun->ChangeAmmo(Gun->TotalAmmo - AmmoNeeded, Gun->MagazineSize);
+														MyWeapon->ChangeAmmo(MyWeapon->MaxAmmo, MyWeapon->AmmoLeftInMag);
+													}
+													/*
+													else
+													{
+														Gun->ServerChangeAmmo(Gun->TotalAmmo - AmmoNeeded, Gun->MagazineSize);
+														MyWeapon->ServerChangeAmmo(MyWeapon->MaxAmmo, MyWeapon->AmmoLeftInMag);
+													}
+													*/
 
 
+												}
+												else
+												{
+													if (Role == ROLE_Authority)
+													{
+														UE_LOG(LogClass, Log, TEXT("This is Server Picking up Ammo"));
+														MyWeapon->ChangeAmmo(MyWeapon->TotalAmmo + Gun->TotalAmmo, MyWeapon->AmmoLeftInMag);
+														Gun->ChangeAmmo(0, Gun->AmmoLeftInMag);
+													}
+													/*
+													else
+													{
+														MyWeapon->ServerChangeAmmo(MyWeapon->TotalAmmo + Gun->TotalAmmo, MyWeapon->AmmoLeftInMag);
+														Gun->ServerChangeAmmo(0, Gun->AmmoLeftInMag);
+													}
+													*/
+
+												}
+
+											}
 										}
-										else
-										{
-											if (Role == ROLE_Authority)
-											{
-												UE_LOG(LogClass, Log, TEXT("This is Server Picking up Ammo"));
-												CurrentPrimary->ChangeAmmo(CurrentPrimary->TotalAmmo + Gun->TotalAmmo, CurrentPrimary->AmmoLeftInMag);
-												Gun->ChangeAmmo(0, Gun->AmmoLeftInMag);
-											}
-											/*
-											else
-											{
-												CurrentPrimary->ServerChangeAmmo(CurrentPrimary->TotalAmmo + Gun->TotalAmmo, CurrentPrimary->AmmoLeftInMag);
-												Gun->ServerChangeAmmo(0, Gun->AmmoLeftInMag);
-											}
-											*/
-
-										}
-										
 									}
 								}
 							}
@@ -870,7 +930,7 @@ void AFPSCharacter::ServerPickupWeapon_Implementation()
 	{
 		if (GameState->GetCurrentState() == EGamePlayState::EPlaying)
 		{
-
+			SetPickingUpWeapon(false);
 			//if (Role == ROLE_Authority)
 			//{
 				// Get all overlapping actors and store them in an array
@@ -881,7 +941,7 @@ void AFPSCharacter::ServerPickupWeapon_Implementation()
 			{
 				AGun* const Gun = Cast<AGun>(CollectedActors[i]);
 				if (Gun != NULL && !Gun->IsPendingKill() && Gun->IsActive() && Gun->WeaponInstigator == NULL) {
-
+					int32 WhereToInsert = 0;
 					if (CurrentPrimary != NULL)
 					{
 						if (AGun* PrimaryGun = Cast<AGun>(CurrentPrimary))
@@ -902,12 +962,31 @@ void AFPSCharacter::ServerPickupWeapon_Implementation()
 							}
 						}
 					}
+					if (CurrentPrimary != NULL)
+					{
+						WhereToInsert = MyWeapons.Find(CurrentPrimary);
+
+					}
+					if (MyWeapons.Num() > 0)
+					{
+						MyWeapons.Insert(Gun, WhereToInsert);
+					}
+					else
+					{
+						MyWeapons.Insert(Gun, 0);
+					}
+					if (CurrentPrimary != NULL)
+					{
+						CurrentPrimary->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+						CurrentPrimary->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponSocket1")));
+					}
 					CurrentPrimary = Gun;
 					Gun->GetStaticMeshComponent()->SetSimulatePhysics(false);
 					//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);
 					Gun->AttachToComponent(FPSMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponLocation")));
 					Gun->PickedUpBy(this);
-					MyWeapons.Insert(Gun,0);
+					//SetPickingUpWeapon(true);
+					
 					UE_LOG(LogClass, Log, TEXT("Current Primary: %s"), *CurrentPrimary->GetName());
 					HasWeapon = true;
 					break;
@@ -941,7 +1020,8 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFPSCharacter, LastHitDirection);
 	DOREPLIFETIME(AFPSCharacter, bIsNearGrenade);
 	DOREPLIFETIME(AFPSCharacter, Grenades);
-	
+	DOREPLIFETIME(AFPSCharacter, MyWeapons);
+	DOREPLIFETIME(AFPSCharacter, PickingUpWeapon);
 	DOREPLIFETIME(AFPSCharacter, Right_CHLocation);
 	DOREPLIFETIME(AFPSCharacter, Top_CHLocation);
 	DOREPLIFETIME(AFPSCharacter, Left_CHLocation);
@@ -1149,6 +1229,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 	// Set up "action" bindings.
 	PlayerInputComponent->BindAction("ThrowGrenade", IE_Pressed, this, &AFPSCharacter::ThrowGrenade);
+	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &AFPSCharacter::SwitchWeapon);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AFPSCharacter::ServerReload);
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &AFPSCharacter::ServerOnZoom);
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &AFPSCharacter::ServerOnStopZoom);

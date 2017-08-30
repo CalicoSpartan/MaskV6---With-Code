@@ -38,7 +38,7 @@ public:
 	// Sets default values for this character's properties
 	AFPSCharacter();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	UPROPERTY(Replicated,EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 		TArray<class AGun*> MyWeapons;
 
 
@@ -151,6 +151,8 @@ public:
 		void Zoom();
 	UFUNCTION(Reliable, NetMultiCast, WithValidation, Category = "Health")
 		void SetIsZoomed(bool zoomvalue);
+	UFUNCTION(Reliable, NetMultiCast)
+		void SetPickingUpWeapon(bool IsPickingUpWeapon);
 	UFUNCTION(BlueprintCallable, Category = "Health")
 		float GetInitialHealth();
 	UFUNCTION(NetMultiCast, Reliable, Category = "Health")
@@ -175,6 +177,8 @@ public:
 		void DropWeapon();
 	UFUNCTION(NetMulticast,Reliable)
 		void DropEquipment();
+	UPROPERTY(Replicated, EditAnywhere)
+		bool PickingUpWeapon = false;
 
 protected:
 	// Called when the game starts or when spawned
@@ -184,6 +188,7 @@ protected:
 		void PickupWeapon();
 	UFUNCTION(Reliable, Server, WithValidation, Category = "Weapon")
 		void SwitchWeapon();
+
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void PickupEquipment();
 
