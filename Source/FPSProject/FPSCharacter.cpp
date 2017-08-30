@@ -201,7 +201,7 @@ void AFPSCharacter::ServerOnPlayerDeath_Implementation()
 
 void AFPSCharacter::OnPlayerDeath_Implementation()
 {
-	
+	DropWeapon();
 	CollectionBox->bGenerateOverlapEvents = false;
 	GrenadeDetectionBox->bGenerateOverlapEvents = false;
 	TriggerDeathUI();
@@ -292,7 +292,7 @@ void AFPSCharacter::OnPlayerDeath_Implementation()
 			GetMesh()->AddForce(LastHitDirection);
 		}
 	}
-	DropWeapon();
+	
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
 		if (Iterator->Get()->AcknowledgedPawn == this) {
@@ -321,7 +321,10 @@ float AFPSCharacter::GetCurrentHealth()
 
 void AFPSCharacter::BeginRechargeHealth()
 {
-	GetWorld()->GetTimerManager().SetTimer(HealthRechargeDELTATimer, this, &AFPSCharacter::RechargeHealth, .01f, true);
+	if (!IsDead)
+	{
+		GetWorld()->GetTimerManager().SetTimer(HealthRechargeDELTATimer, this, &AFPSCharacter::RechargeHealth, .001f, true);
+	}
 }
 
 
@@ -335,7 +338,7 @@ void AFPSCharacter::RechargeHealth()
 		}
 		else
 		{
-			ServerChangeHealthBy(DELTA * HealthRechargeSpeed * 100.0f);
+			ServerChangeHealthBy(.01 * HealthRechargeSpeed);
 		}
 	}
 	if (GetCurrentHealth() > GetInitialHealth())
@@ -360,7 +363,10 @@ void AFPSCharacter::ServerChangeHealthBy_Implementation(float delta)
 		GetWorld()->GetTimerManager().SetTimer(HealthRechargeTimer, this, &AFPSCharacter::BeginRechargeHealth, HealthRechargeDelay, false);
 
 	}
-	TriggerUpdateUI();
+	if (Role == ROLE_Authority)
+	{
+		TriggerUpdateUI();
+	}
 
 }
 float AFPSCharacter::GetInitialHealth()
@@ -629,6 +635,7 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 									FVector BulletTrailDir = FVector(hit.Location - hit.TraceStart).GetSafeNormal();
 									hitplayer->SetHitData(CurrentPrimary->BulletForce, hit.BoneName, BulletTrailDir);
 									hitplayer->ServerChangeHealthBy(-CurrentPrimary->BulletDamage * DamagePercent);
+									hitplayer->TriggerUpdateUI();
 									
 									//UE_LOG(LogClass, Log, FString::SanitizeFloat(hitplayer->GetCurrentHealth());
 									//hitplayer->HealthPercentage = hitplayer->GetCurrentHealth() / hitplayer->GetInitialHealth();
