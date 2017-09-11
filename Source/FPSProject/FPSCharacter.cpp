@@ -142,9 +142,9 @@ void AFPSCharacter::DropEquipment_Implementation()
 	{
 		for (int32 i = 0; i < Grenades.Num(); ++i)
 		{
-			if (AFragGrenade* const frag = Cast<AFragGrenade>(Grenades[i]))
+			if (ABaseGrenade* const frag = Cast<ABaseGrenade>(Grenades[i]))
 			{
-				ABaseGrenade* Grenade = GetWorld()->SpawnActor<ABaseGrenade>(FragSUB, GetActorLocation() + GetActorForwardVector() * 100.0, FRotator::ZeroRotator);
+				ABaseGrenade* Grenade = GetWorld()->SpawnActor<ABaseGrenade>(CurrentGrenade, GetActorLocation() + GetActorForwardVector() * 100.0, FRotator::ZeroRotator);
 				//Grenades.RemoveAt(i);
 			}
 		}
@@ -360,6 +360,7 @@ void AFPSCharacter::ServerChangeHealthBy_Implementation(float delta)
 	else
 	{
 		GetWorld()->GetTimerManager().ClearTimer(HealthRechargeTimer);
+		GetWorld()->GetTimerManager().ClearTimer(HealthRechargeDELTATimer);
 		GetWorld()->GetTimerManager().SetTimer(HealthRechargeTimer, this, &AFPSCharacter::BeginRechargeHealth, HealthRechargeDelay, false);
 
 	}
@@ -771,16 +772,24 @@ void AFPSCharacter::ServerSwitchWeapon_Implementation()
 				if (MyWeapons.Num() > 1)
 				{
 					int32 PrimaryIndex = MyWeapons.Find(CurrentPrimary);
+					if (PrimaryIndex == NULL)
+					{
+						UE_LOG(LogClass, Log, TEXT("Couldn't find weapon"));
+						UE_LOG(LogClass, Log, TEXT("CurrentPrimaryClass: %s"),*PrimaryInstance->GetName());
+						UE_LOG(LogClass, Log, TEXT("CurrentPrimaryStaticClass: %s"), *PrimaryInstance->GetSuperClass()->GetName());
+					}
 					if (PrimaryIndex != MyWeapons.Num() - 1)
 					{
 						if (AGun* SecondaryGun = Cast<AGun>(MyWeapons[PrimaryIndex + 1]))
 						{
 							CurrentPrimary->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
 							CurrentPrimary->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponSocket1")));
-							
+							SecondaryInstance = CurrentPrimary->GetClass();
 							//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);
 							SecondaryGun->AttachToComponent(FPSMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponLocation")));
+							PrimaryInstance = SecondaryGun->GetClass();
 							CurrentPrimary = SecondaryGun;
+							
 						}
 					}
 					else
@@ -789,9 +798,10 @@ void AFPSCharacter::ServerSwitchWeapon_Implementation()
 						{
 							CurrentPrimary->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
 							CurrentPrimary->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponSocket1")));
-
+							SecondaryInstance = CurrentPrimary->GetClass();
 							//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);
 							SecondaryGun->AttachToComponent(FPSMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponLocation")));
+							PrimaryInstance = SecondaryGun->GetClass();
 							CurrentPrimary = SecondaryGun;
 						}
 					}
@@ -820,13 +830,19 @@ void AFPSCharacter::PickupWeapon_Implementation()
 {
 	ServerPickupWeapon();
 }
+
+void AFPSCharacter::DeadDropWeapon()
+{
+	UE_LOG(LogClass, Log, TEXT("Drop weapon now"));
+}
 void AFPSCharacter::DropWeapon()//_Implementation()
 {
 	if (AFPSGameState* const GameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
 	{
 		if (GameState->GetCurrentState() == EGamePlayState::EPlaying)
 		{
-			UE_LOG(LogClass, Log, TEXT("HowManyWeapons: %d"), MyWeapons.Num());
+			GetWorld()->GetTimerManager().SetTimer(DeadWeaponDropTimer, this, &AFPSCharacter::DeadDropWeapon, DeadWeaponDropDelay, false);
+			
 			if (IsDead)
 			{
 				//GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
@@ -835,10 +851,23 @@ void AFPSCharacter::DropWeapon()//_Implementation()
 				{
 					if (AGun* Gun = Cast<AGun>(MyWeapons[i]))
 					{
+						Gun->Destroy();
+						/*
+						if (Gun != CurrentPrimary)
+						{
+							UE_LOG(LogClass, Log, TEXT("SecondaryDropping: %s"), *Gun->GetName());
+							Gun->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+							Gun->SecondaryDroppedBy(this);
+						}
+						else
+						{
+							UE_LOG(LogClass, Log, TEXT("PrimaryDropping: %s"), *Gun->GetName());
+							Gun->DroppedBy(this);
+						}
 						//Gun->AttachToComponent(FPSMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponLocation")));
-						UE_LOG(LogClass, Log, TEXT("Dropping: %s"),*Gun->GetName());
-						Gun->GetStaticMeshComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
-						Gun->DroppedBy(this);
+						
+						//Gun->GetStaticMeshComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
+						*/
 
 						
 					}
@@ -951,7 +980,7 @@ void AFPSCharacter::PickupEquipment()
 				{
 					if (!Grenade->IsPendingKill() && !Grenade->bPendingExplode)
 					{
-
+						CurrentGrenade = Grenade->GetClass();
 						Grenades.Add(Grenade);
 						Grenade->Destroy();
 					}
@@ -1045,7 +1074,10 @@ void AFPSCharacter::ServerPickupWeapon_Implementation()
 					{
 						CurrentPrimary->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
 						CurrentPrimary->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponSocket1")));
+						SecondaryInstance = CurrentPrimary->GetClass();
 					}
+					UE_LOG(LogClass,Log,TEXT("%s"),*Gun->GetClass()->GetName());
+					PrimaryInstance = Gun->GetClass();
 					CurrentPrimary = Gun;
 					Gun->GetStaticMeshComponent()->SetSimulatePhysics(false);
 					//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);
@@ -1322,12 +1354,11 @@ void AFPSCharacter::ThrowGrenade_Implementation()
 		if (Grenades[0] != NULL)
 
 		{
-			
-			if (AFragGrenade* const frag = Cast<AFragGrenade>(Grenades[0]))
+			if (CurrentGrenade)
 			{
-				ABaseGrenade* Grenade = GetWorld()->SpawnActor<ABaseGrenade>(FragSUB, FPSCameraComponent->GetComponentLocation() + FPSCameraComponent->GetForwardVector() * 100.0, FRotator::ZeroRotator);
+				ABaseGrenade* Grenade = GetWorld()->SpawnActor<ABaseGrenade>(CurrentGrenade, FPSCameraComponent->GetComponentLocation() + FPSCameraComponent->GetForwardVector() * 100.0, FRotator::ZeroRotator);
 				MoveIgnoreActorAdd(Grenade);
-				Grenade->Thrown(FPSCameraComponent->GetForwardVector() + FVector(0, 0, GrenadeThrowUpForce),GrenadeThrowStrength,this);
+				Grenade->Thrown(FPSCameraComponent->GetForwardVector() + FVector(0, 0, GrenadeThrowUpForce), GrenadeThrowStrength, this);
 				Grenades.RemoveAt(0);
 			}
 			

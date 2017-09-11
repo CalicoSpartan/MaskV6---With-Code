@@ -102,6 +102,8 @@ public:
 		virtual void PickedUpBy(APawn* Pawn);
 	UFUNCTION(BlueprintAuthorityOnly, Category = "Weapon")
 		virtual void DroppedBy(APawn* Pawn);
+	UFUNCTION(BlueprintAuthorityOnly, Category = "Weapon")
+		virtual void SecondaryDroppedBy(APawn* Pawn);
 	UFUNCTION(Server, WithValidation, Reliable)
 		void ServerChangeAmmo(int32 Ammo, int32 Mag);
 	UFUNCTION(BlueprintCallable)
@@ -142,6 +144,7 @@ private:
 		void ClientOnPickedUpBy(APawn* Pawn);
 	UFUNCTION(NetMulticast, Unreliable)
 		void ClientOnDroppedBy(APawn* Pawn);
+
 
 };
 

@@ -64,11 +64,20 @@ public:
 	UPROPERTY(Replicated,EditAnywhere,BlueprintReadWrite)
 	TArray<ABaseGrenade*> Grenades;
 	UPROPERTY(EditAnywhere)	
-		TSubclassOf<ABaseGrenade> FragSUB;
+		TSubclassOf<ABaseGrenade> CurrentGrenade;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AGun> PrimaryInstance;
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<AGun> SecondaryInstance;
 
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ThrowGrenade();
 
+	FTimerHandle DeadWeaponDropTimer;
+	UPROPERTY(EditAnywhere)
+		float DeadWeaponDropDelay = 1.5f;
+	UFUNCTION()
+		void DeadDropWeapon();
 	FTimerHandle UpdateTimer;
 	UFUNCTION(NetMultiCast, Reliable, WithValidation)
 		void TriggerDeathUI();

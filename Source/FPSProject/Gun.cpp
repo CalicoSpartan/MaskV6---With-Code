@@ -204,6 +204,21 @@ void AGun::DroppedBy(APawn * Pawn)
 		GetStaticMeshComponent()->SetSimulatePhysics(true);
 	}
 }
+void AGun::SecondaryDroppedBy(APawn * Pawn)
+{
+
+	if (Role == ROLE_Authority)
+	{
+		
+		GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		//GetStaticMeshComponent()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
+		Pawn->MoveIgnoreActorAdd(this);
+		ClientOnDroppedBy(Pawn);
+		
+		GetStaticMeshComponent()->IgnoreActorWhenMoving(Pawn,true);
+		//GetStaticMeshComponent()->SetSimulatePhysics(true);
+	}
+}
 
 void AGun::PickedUpBy(APawn * Pawn)
 {
