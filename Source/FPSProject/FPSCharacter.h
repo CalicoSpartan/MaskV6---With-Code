@@ -66,9 +66,10 @@ public:
 	UPROPERTY(EditAnywhere)	
 		TSubclassOf<ABaseGrenade> CurrentGrenade;
 	UPROPERTY(EditAnywhere)
-		TSubclassOf<AGun> PrimaryInstance;
+		class AGun* PrimaryInstance;
 	UPROPERTY(EditAnywhere)
-		TSubclassOf<AGun> SecondaryInstance;
+		class AGun* SecondaryInstance;
+		//TSubobjectPtr<class AGun> SecondaryInstance;
 
 	UFUNCTION(Server, Reliable, WithValidation)
 		void ThrowGrenade();
@@ -238,7 +239,8 @@ protected:
 		FTimerHandle HealthRechargeTimer;
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 		FTimerHandle HealthRechargeDELTATimer;
-
+	UPROPERTY(Replicated,EditAnywhere)
+		FVector MyDeathLocation;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 		bool IsFiring;

@@ -207,7 +207,7 @@ void AFPSCharacter::OnPlayerDeath_Implementation()
 	TriggerDeathUI();
 	// disconnect controller from pawn
 	DetachFromControllerPendingDestroy();
-
+	MyDeathLocation = GetActorLocation();
 	if (GetMesh())
 	{
 		static FName CollisionProfileName(TEXT("Ragdoll"));
@@ -775,8 +775,8 @@ void AFPSCharacter::ServerSwitchWeapon_Implementation()
 					if (PrimaryIndex == NULL)
 					{
 						UE_LOG(LogClass, Log, TEXT("Couldn't find weapon"));
-						UE_LOG(LogClass, Log, TEXT("CurrentPrimaryClass: %s"),*PrimaryInstance->GetName());
-						UE_LOG(LogClass, Log, TEXT("CurrentPrimaryStaticClass: %s"), *PrimaryInstance->GetSuperClass()->GetName());
+						
+						
 					}
 					if (PrimaryIndex != MyWeapons.Num() - 1)
 					{
@@ -784,10 +784,10 @@ void AFPSCharacter::ServerSwitchWeapon_Implementation()
 						{
 							CurrentPrimary->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
 							CurrentPrimary->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponSocket1")));
-							SecondaryInstance = CurrentPrimary->GetClass();
+							SecondaryInstance = CurrentPrimary;
 							//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);
 							SecondaryGun->AttachToComponent(FPSMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponLocation")));
-							PrimaryInstance = SecondaryGun->GetClass();
+							PrimaryInstance = SecondaryGun;
 							CurrentPrimary = SecondaryGun;
 							
 						}
@@ -798,10 +798,10 @@ void AFPSCharacter::ServerSwitchWeapon_Implementation()
 						{
 							CurrentPrimary->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
 							CurrentPrimary->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponSocket1")));
-							SecondaryInstance = CurrentPrimary->GetClass();
+							SecondaryInstance = CurrentPrimary;
 							//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);
 							SecondaryGun->AttachToComponent(FPSMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponLocation")));
-							PrimaryInstance = SecondaryGun->GetClass();
+							PrimaryInstance = SecondaryGun;
 							CurrentPrimary = SecondaryGun;
 						}
 					}
@@ -833,7 +833,37 @@ void AFPSCharacter::PickupWeapon_Implementation()
 
 void AFPSCharacter::DeadDropWeapon()
 {
-	UE_LOG(LogClass, Log, TEXT("Drop weapon now"));
+	if (PrimaryInstance != NULL)
+	{
+		
+		AGun* DroppedPrimary = GetWorld()->SpawnActor<AGun>(PrimaryInstance->GetClass(), MyDeathLocation, FRotator::ZeroRotator);
+		if (Role == ROLE_Authority)
+		{
+			UE_LOG(LogClass, Log, TEXT("Changing ammo from server"));
+			DroppedPrimary->ChangeAmmo(DroppedPrimary->MaxAmmo - (PrimaryInstance->MaxAmmo - PrimaryInstance->TotalAmmo), DroppedPrimary->MagazineSize - (PrimaryInstance->MagazineSize - PrimaryInstance->AmmoLeftInMag));
+		}
+		else
+		{
+			UE_LOG(LogClass, Log, TEXT("Changing ammo from client"));
+			DroppedPrimary->ServerChangeAmmo(DroppedPrimary->MaxAmmo - (PrimaryInstance->MaxAmmo - PrimaryInstance->TotalAmmo), DroppedPrimary->MagazineSize - (PrimaryInstance->MagazineSize - PrimaryInstance->AmmoLeftInMag));
+		}
+	}
+	if (SecondaryInstance != NULL)
+	{
+
+		AGun* DroppedSecondary = GetWorld()->SpawnActor<AGun>(SecondaryInstance->GetClass(), MyDeathLocation, FRotator::ZeroRotator);
+		if (Role == ROLE_Authority)
+		{
+			UE_LOG(LogClass, Log, TEXT("Changing ammo from server"));
+			DroppedSecondary->ChangeAmmo(DroppedSecondary->MaxAmmo - (SecondaryInstance->MaxAmmo - SecondaryInstance->TotalAmmo), DroppedSecondary->MagazineSize - (SecondaryInstance->MagazineSize - SecondaryInstance->AmmoLeftInMag));
+		}
+		else
+		{
+			UE_LOG(LogClass, Log, TEXT("Changing ammo from client"));
+			DroppedSecondary->ServerChangeAmmo(DroppedSecondary->MaxAmmo - (SecondaryInstance->MaxAmmo - SecondaryInstance->TotalAmmo), DroppedSecondary->MagazineSize - (SecondaryInstance->MagazineSize - SecondaryInstance->AmmoLeftInMag));
+		}
+	}
+	
 }
 void AFPSCharacter::DropWeapon()//_Implementation()
 {
@@ -841,16 +871,18 @@ void AFPSCharacter::DropWeapon()//_Implementation()
 	{
 		if (GameState->GetCurrentState() == EGamePlayState::EPlaying)
 		{
-			GetWorld()->GetTimerManager().SetTimer(DeadWeaponDropTimer, this, &AFPSCharacter::DeadDropWeapon, DeadWeaponDropDelay, false);
+			
 			
 			if (IsDead)
 			{
 				//GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
-				
+				GetWorld()->GetTimerManager().SetTimer(DeadWeaponDropTimer, this, &AFPSCharacter::DeadDropWeapon, DeadWeaponDropDelay, false);
 				for (int32 i = 0; i < MyWeapons.Num(); ++i)
 				{
 					if (AGun* Gun = Cast<AGun>(MyWeapons[i]))
 					{
+
+						
 						Gun->Destroy();
 						/*
 						if (Gun != CurrentPrimary)
@@ -1074,10 +1106,10 @@ void AFPSCharacter::ServerPickupWeapon_Implementation()
 					{
 						CurrentPrimary->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
 						CurrentPrimary->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponSocket1")));
-						SecondaryInstance = CurrentPrimary->GetClass();
+						SecondaryInstance = CurrentPrimary;
 					}
 					UE_LOG(LogClass,Log,TEXT("%s"),*Gun->GetClass()->GetName());
-					PrimaryInstance = Gun->GetClass();
+					PrimaryInstance = Gun;
 					CurrentPrimary = Gun;
 					Gun->GetStaticMeshComponent()->SetSimulatePhysics(false);
 					//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);
@@ -1106,6 +1138,7 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AFPSCharacter, GrenadeThrowStrength);
+	DOREPLIFETIME(AFPSCharacter, MyDeathLocation);
 	DOREPLIFETIME(AFPSCharacter, IsDead);
 	DOREPLIFETIME(AFPSCharacter, GrenadeThrowUpForce);
 	DOREPLIFETIME(AFPSCharacter, simASV);
