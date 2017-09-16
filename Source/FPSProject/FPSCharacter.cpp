@@ -940,6 +940,8 @@ void AFPSCharacter::PickupEquipment()
 
 			TArray<AActor*> PossibleEquipment;
 			CollectionBox->GetOverlappingActors(PossibleEquipment);
+			bool FoundPossibleWeapon = false;
+			FString PossibleGunName = "";
 			for (int32 i = 0; i < PossibleEquipment.Num(); ++i)
 			{
 
@@ -947,7 +949,7 @@ void AFPSCharacter::PickupEquipment()
 				{
 					if (!Gun->IsPendingKill() && Gun->IsActive() && Gun->WeaponInstigator == NULL)
 					{
-
+						bool AlreadyHaveWeapon = false;
 						for (int32 i = 0; i < MyWeapons.Num(); ++i)
 						{
 							if (AGun* MyWeapon = Cast<AGun>(MyWeapons[i]))
@@ -959,6 +961,25 @@ void AFPSCharacter::PickupEquipment()
 								{
 									if (Gun != MyWeapon)
 									{
+										if (MyWeapon->GunName != Gun->GunName && Gun != PrimaryInstance && Gun != SecondaryInstance)
+										{
+											if (!AlreadyHaveWeapon)
+											{
+												FoundPossibleWeapon = true;
+												PossibleGunName = Gun->GunName.ToString();
+												
+											}
+											else
+											{
+												AlreadyHaveWeapon = true;
+											}
+										}
+										else
+										{
+											AlreadyHaveWeapon = true;
+											//PickupWeaponText = "";
+
+										}
 										if (MyWeapon->GunName == Gun->GunName)
 										{
 											if (MyWeapon->TotalAmmo != MyWeapon->MaxAmmo)
@@ -1006,8 +1027,13 @@ void AFPSCharacter::PickupEquipment()
 								}
 							}
 						}
+						if (AlreadyHaveWeapon == true)
+						{
+							FoundPossibleWeapon = false;
+						}
 					}
 				}
+
 				if (ABaseGrenade* const Grenade = Cast<ABaseGrenade>(PossibleEquipment[i]))
 				{
 					if (!Grenade->IsPendingKill() && !Grenade->bPendingExplode)
@@ -1017,6 +1043,16 @@ void AFPSCharacter::PickupEquipment()
 						Grenade->Destroy();
 					}
 				}
+			}
+			if (!FoundPossibleWeapon)
+			{
+
+				PickupWeaponText = "";
+			
+			}
+			else
+			{
+				PickupWeaponText = "Press E to pickup " + PossibleGunName;
 			}
 			
 		}
@@ -1109,6 +1145,7 @@ void AFPSCharacter::ServerPickupWeapon_Implementation()
 						SecondaryInstance = CurrentPrimary;
 					}
 					UE_LOG(LogClass,Log,TEXT("%s"),*Gun->GetClass()->GetName());
+					PickupWeaponText = "";
 					PrimaryInstance = Gun;
 					CurrentPrimary = Gun;
 					Gun->GetStaticMeshComponent()->SetSimulatePhysics(false);
@@ -1138,6 +1175,7 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AFPSCharacter, GrenadeThrowStrength);
+	DOREPLIFETIME(AFPSCharacter, PickupWeaponText);
 	DOREPLIFETIME(AFPSCharacter, MyDeathLocation);
 	DOREPLIFETIME(AFPSCharacter, IsDead);
 	DOREPLIFETIME(AFPSCharacter, GrenadeThrowUpForce);
@@ -1261,6 +1299,10 @@ void AFPSCharacter::Tick(float DeltaTime)
 
 
 		//}
+	}
+	else
+	{
+		PickupWeaponText = "";
 	}
 	GrenadeNearby();
 	

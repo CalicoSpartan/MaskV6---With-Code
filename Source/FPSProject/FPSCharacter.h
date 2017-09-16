@@ -40,7 +40,8 @@ public:
 
 	UPROPERTY(Replicated,EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 		TArray<class AGun*> MyWeapons;
-
+	UPROPERTY(Replicated,EditAnywhere, BlueprintReadOnly)
+		FString PickupWeaponText;
 
 	UFUNCTION()
 		void Update();
