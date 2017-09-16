@@ -52,6 +52,7 @@ AFPSCharacter::AFPSCharacter()
 
 
 	//set base weapon values
+	bCanSwitchWeapon = true;
 	IsFiring = false;
 	HasWeapon = false;
 	InitialHealth = 100.0f;
@@ -752,6 +753,12 @@ void AFPSCharacter::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(UpdateTimer, this, &AFPSCharacter::Update, UpdateDelay, true);
 }
 
+
+void AFPSCharacter::SetCanSwitchWeapon()
+{
+	bCanSwitchWeapon = true;
+}
+
 bool AFPSCharacter::SwitchWeapon_Validate()
 {
 	return true;
@@ -771,39 +778,49 @@ void AFPSCharacter::ServerSwitchWeapon_Implementation()
 			{
 				if (MyWeapons.Num() > 1)
 				{
-					int32 PrimaryIndex = MyWeapons.Find(CurrentPrimary);
-					if (PrimaryIndex == NULL)
+					if (bCanSwitchWeapon == true)
 					{
-						UE_LOG(LogClass, Log, TEXT("Couldn't find weapon"));
-						
-						
-					}
-					if (PrimaryIndex != MyWeapons.Num() - 1)
-					{
-						if (AGun* SecondaryGun = Cast<AGun>(MyWeapons[PrimaryIndex + 1]))
+						UE_LOG(LogClass, Log, TEXT("PENISSSSSSSSSSSSSSSSSSSSSS"));
+						int32 PrimaryIndex = MyWeapons.Find(CurrentPrimary);
+						if (PrimaryIndex == NULL)
 						{
-							CurrentPrimary->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
-							CurrentPrimary->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponSocket1")));
-							SecondaryInstance = CurrentPrimary;
-							//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);
-							SecondaryGun->AttachToComponent(FPSMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponLocation")));
-							PrimaryInstance = SecondaryGun;
-							CurrentPrimary = SecondaryGun;
-							
+							UE_LOG(LogClass, Log, TEXT("Couldn't find weapon"));
+
+
 						}
+						if (PrimaryIndex != MyWeapons.Num() - 1)
+						{
+							if (AGun* SecondaryGun = Cast<AGun>(MyWeapons[PrimaryIndex + 1]))
+							{
+								CurrentPrimary->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+								CurrentPrimary->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponSocket1")));
+								SecondaryInstance = CurrentPrimary;
+								//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);
+								SecondaryGun->AttachToComponent(FPSMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponLocation")));
+								PrimaryInstance = SecondaryGun;
+								CurrentPrimary = SecondaryGun;
+
+							}
+						}
+						else
+						{
+							if (AGun* SecondaryGun = Cast<AGun>(MyWeapons[0]))
+							{
+								CurrentPrimary->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+								CurrentPrimary->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponSocket1")));
+								SecondaryInstance = CurrentPrimary;
+								//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);
+								SecondaryGun->AttachToComponent(FPSMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponLocation")));
+								PrimaryInstance = SecondaryGun;
+								CurrentPrimary = SecondaryGun;
+							}
+						}
+						//bCanSwitchWeapon = false;
+						GetWorld()->GetTimerManager().SetTimer(WeaponSwitchDelayTimer, this, &AFPSCharacter::SetCanSwitchWeapon, WeaponSwitchDelay, false);
 					}
 					else
 					{
-						if (AGun* SecondaryGun = Cast<AGun>(MyWeapons[0]))
-						{
-							CurrentPrimary->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
-							CurrentPrimary->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponSocket1")));
-							SecondaryInstance = CurrentPrimary;
-							//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);
-							SecondaryGun->AttachToComponent(FPSMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponLocation")));
-							PrimaryInstance = SecondaryGun;
-							CurrentPrimary = SecondaryGun;
-						}
+						UE_LOG(LogClass, Log, TEXT("something is wrong"));
 					}
 				}
 				else
@@ -950,82 +967,90 @@ void AFPSCharacter::PickupEquipment()
 					if (!Gun->IsPendingKill() && Gun->IsActive() && Gun->WeaponInstigator == NULL)
 					{
 						bool AlreadyHaveWeapon = false;
-						for (int32 i = 0; i < MyWeapons.Num(); ++i)
+						if (MyWeapons.Num() > 0)
 						{
-							if (AGun* MyWeapon = Cast<AGun>(MyWeapons[i]))
+							for (int32 i = 0; i < MyWeapons.Num(); ++i)
 							{
-
-
-
-								if (MyWeapon != NULL)
+								if (AGun* MyWeapon = Cast<AGun>(MyWeapons[i]))
 								{
-									if (Gun != MyWeapon)
+
+
+
+									if (MyWeapon != NULL)
 									{
-										if (MyWeapon->GunName != Gun->GunName && Gun != PrimaryInstance && Gun != SecondaryInstance)
+										if (Gun != MyWeapon)
 										{
-											if (!AlreadyHaveWeapon)
+											if (MyWeapon->GunName != Gun->GunName && Gun != PrimaryInstance && Gun != SecondaryInstance)
 											{
-												FoundPossibleWeapon = true;
-												PossibleGunName = Gun->GunName.ToString();
-												
-											}
-											else
-											{
-												AlreadyHaveWeapon = true;
-											}
-										}
-										else
-										{
-											AlreadyHaveWeapon = true;
-											//PickupWeaponText = "";
-
-										}
-										if (MyWeapon->GunName == Gun->GunName)
-										{
-											if (MyWeapon->TotalAmmo != MyWeapon->MaxAmmo)
-											{
-												int32 AmmoNeeded = MyWeapon->MaxAmmo - MyWeapon->TotalAmmo;
-												if (Gun->TotalAmmo >= AmmoNeeded)
+												if (!AlreadyHaveWeapon)
 												{
-													if (Role == ROLE_Authority)
-													{
-														UE_LOG(LogClass, Log, TEXT("This is Server Picking up Ammo"));
-														Gun->ChangeAmmo(Gun->TotalAmmo - AmmoNeeded, Gun->MagazineSize);
-														MyWeapon->ChangeAmmo(MyWeapon->MaxAmmo, MyWeapon->AmmoLeftInMag);
-													}
-													/*
-													else
-													{
-														Gun->ServerChangeAmmo(Gun->TotalAmmo - AmmoNeeded, Gun->MagazineSize);
-														MyWeapon->ServerChangeAmmo(MyWeapon->MaxAmmo, MyWeapon->AmmoLeftInMag);
-													}
-													*/
-
+													FoundPossibleWeapon = true;
+													PossibleGunName = Gun->GunName.ToString();
 
 												}
 												else
 												{
-													if (Role == ROLE_Authority)
+													AlreadyHaveWeapon = true;
+												}
+											}
+											else
+											{
+												AlreadyHaveWeapon = true;
+												//PickupWeaponText = "";
+
+											}
+											if (MyWeapon->GunName == Gun->GunName)
+											{
+												if (MyWeapon->TotalAmmo != MyWeapon->MaxAmmo)
+												{
+													int32 AmmoNeeded = MyWeapon->MaxAmmo - MyWeapon->TotalAmmo;
+													if (Gun->TotalAmmo >= AmmoNeeded)
 													{
-														UE_LOG(LogClass, Log, TEXT("This is Server Picking up Ammo"));
-														MyWeapon->ChangeAmmo(MyWeapon->TotalAmmo + Gun->TotalAmmo, MyWeapon->AmmoLeftInMag);
-														Gun->ChangeAmmo(0, Gun->AmmoLeftInMag);
+														if (Role == ROLE_Authority)
+														{
+															UE_LOG(LogClass, Log, TEXT("This is Server Picking up Ammo"));
+															Gun->ChangeAmmo(Gun->TotalAmmo - AmmoNeeded, Gun->MagazineSize);
+															MyWeapon->ChangeAmmo(MyWeapon->MaxAmmo, MyWeapon->AmmoLeftInMag);
+														}
+														/*
+														else
+														{
+															Gun->ServerChangeAmmo(Gun->TotalAmmo - AmmoNeeded, Gun->MagazineSize);
+															MyWeapon->ServerChangeAmmo(MyWeapon->MaxAmmo, MyWeapon->AmmoLeftInMag);
+														}
+														*/
+
+
 													}
-													/*
 													else
 													{
-														MyWeapon->ServerChangeAmmo(MyWeapon->TotalAmmo + Gun->TotalAmmo, MyWeapon->AmmoLeftInMag);
-														Gun->ServerChangeAmmo(0, Gun->AmmoLeftInMag);
+														if (Role == ROLE_Authority)
+														{
+															UE_LOG(LogClass, Log, TEXT("This is Server Picking up Ammo"));
+															MyWeapon->ChangeAmmo(MyWeapon->TotalAmmo + Gun->TotalAmmo, MyWeapon->AmmoLeftInMag);
+															Gun->ChangeAmmo(0, Gun->AmmoLeftInMag);
+														}
+														/*
+														else
+														{
+															MyWeapon->ServerChangeAmmo(MyWeapon->TotalAmmo + Gun->TotalAmmo, MyWeapon->AmmoLeftInMag);
+															Gun->ServerChangeAmmo(0, Gun->AmmoLeftInMag);
+														}
+														*/
+
 													}
-													*/
 
 												}
-
 											}
 										}
 									}
 								}
 							}
+						}
+						else
+						{
+							FoundPossibleWeapon = true;
+							PossibleGunName = Gun->GunName.ToString();
 						}
 						if (AlreadyHaveWeapon == true)
 						{
@@ -1176,6 +1201,7 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AFPSCharacter, GrenadeThrowStrength);
 	DOREPLIFETIME(AFPSCharacter, PickupWeaponText);
+	DOREPLIFETIME(AFPSCharacter, bCanSwitchWeapon);
 	DOREPLIFETIME(AFPSCharacter, MyDeathLocation);
 	DOREPLIFETIME(AFPSCharacter, IsDead);
 	DOREPLIFETIME(AFPSCharacter, GrenadeThrowUpForce);

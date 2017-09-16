@@ -42,7 +42,14 @@ public:
 		TArray<class AGun*> MyWeapons;
 	UPROPERTY(Replicated,EditAnywhere, BlueprintReadOnly)
 		FString PickupWeaponText;
-
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+		float WeaponSwitchDelay = 1.0f;
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+		FTimerHandle WeaponSwitchDelayTimer;
+	UPROPERTY(Replicated, EditAnywhere, Category = "Weapon")
+		bool bCanSwitchWeapon = true;
+	UFUNCTION()
+		void SetCanSwitchWeapon();
 	UFUNCTION()
 		void Update();
 	UPROPERTY(EditAnywhere, Category = "Update")
@@ -209,6 +216,7 @@ protected:
 
 	UFUNCTION(Server,Reliable,WithValidation, Category = "Equipment")
 		void ServerDropEquipment();
+
 
 	UFUNCTION(Client, Reliable, WithValidation, Category = "Equipment")
 		void ClientDropEquipment();
