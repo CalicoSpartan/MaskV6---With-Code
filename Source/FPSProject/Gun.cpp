@@ -72,6 +72,7 @@ void AGun::ChangeAmmo(int32 Ammo, int32 Mag)
 	}
 	AmmoLeftInMag = Mag;
 	TotalAmmo = Ammo;
+	
 }
 
 bool AGun::ServerChangeAmmo_Validate(int32 Ammo, int32 Mag)
@@ -84,8 +85,14 @@ void AGun::ServerChangeAmmo_Implementation(int32 Ammo, int32 Mag)
 
 	if (Role == ROLE_Authority)
 	{
+		UE_LOG(LogClass, Log, TEXT("Server Calling ChangeAmmo()"));
 		ChangeAmmo(Ammo, Mag);
 	}
+	else
+	{
+		UE_LOG(LogClass, Log, TEXT("Unknown User ChangeAmmo()"));
+	}
+
 }
 
 
@@ -264,3 +271,5 @@ void AGun::ClientOnDroppedBy_Implementation(APawn* Pawn)
 	WeaponInstigator = NULL;
 
 }
+
+

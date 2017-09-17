@@ -110,7 +110,7 @@ public:
 		virtual void SecondaryDroppedBy(APawn* Pawn);
 	UFUNCTION(Server, WithValidation, Reliable)
 		void ServerChangeAmmo(int32 Ammo, int32 Mag);
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 		void ChangeAmmo(int32 Ammo, int32 Mag);
 	UFUNCTION(Server, WithValidation, Reliable)
 		void StartReload();
@@ -139,6 +139,7 @@ protected:
 	//this is called whenever bIsActive is updated
 	UFUNCTION()
 		virtual void OnRep_IsActive();
+
 
 
 
