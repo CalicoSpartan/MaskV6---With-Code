@@ -407,6 +407,40 @@ void AFPSCharacter::OnStopShoot()
 	ServerOnStopShoot();
 }
 
+
+
+
+
+void AFPSCharacter::AddRecoil_Implementation()
+{
+	if (CurrentPrimary != NULL)
+	{
+		float TrueRecoilValue = 0.0f;
+		if (IsZoomed)
+		{
+			TrueRecoilValue = CurrentPrimary->ZoomRecoilValue / 8.0f;
+		}
+		else
+		{
+			TrueRecoilValue = CurrentPrimary->RecoilValue / 8.0f;
+		}
+
+		float RandomPitchValue = FMath::RandRange(TrueRecoilValue * 0.7f, TrueRecoilValue * 1.3f);
+		
+		float RandomYawValue = FMath::RandRange(-TrueRecoilValue / 2.0f, +TrueRecoilValue / 2.0f);
+	
+		
+		AddControllerPitchInput(-RandomPitchValue);
+		AddControllerYawInput(RandomYawValue);
+
+
+
+
+	}
+
+}
+
+
 bool AFPSCharacter::ServerOnZoom_Validate()
 {
 	return true;
@@ -476,6 +510,7 @@ void AFPSCharacter::Zoom_Implementation()
 		{
 			FPSCameraComponent->SetFieldOfView(FMath::Lerp(FPSCameraComponent->FieldOfView, DefaultFOV, CurrentPrimary->ZoomRate));
 		}
+		
 	}
 
 }
@@ -498,18 +533,8 @@ void AFPSCharacter::FireAgain()
 {
 	ServerOnShoot();
 }
-bool AFPSCharacter::ServerAddGunRecoil_Validate(float RecoilValue)
-{
-	return true;
-}
-void AFPSCharacter::ServerAddGunRecoil_Implementation(float RecoilValue)
-{
-	float TrueRecoilValue = RecoilValue / 8.0f;
-	float RandomPitchValue = FMath::RandRange(TrueRecoilValue * 0.7f, TrueRecoilValue * 1.3f);
-	AddControllerPitchInput(-RandomPitchValue);
-	float RandomYawValue = FMath::RandRange(-TrueRecoilValue / 2.0f, +TrueRecoilValue / 2.0f);
-	AddControllerYawInput(RandomYawValue);
-}
+
+
 
 bool AFPSCharacter::SetIsZoomed_Validate(bool zoomvalue)
 {
@@ -518,6 +543,7 @@ bool AFPSCharacter::SetIsZoomed_Validate(bool zoomvalue)
 void AFPSCharacter::SetIsZoomed_Implementation(bool zoomvalue)
 {
 	IsZoomed = zoomvalue;
+	
 }
 bool AFPSCharacter::ServerOnShoot_Validate()
 {
@@ -547,6 +573,13 @@ void AFPSCharacter::GenerateShotMULTI_Implementation()
 	GenerateShot();
 }
 
+
+void AFPSCharacter::SetIsRecoiling_Implementation(bool recoilvalue)
+{
+	IsRecoiling = recoilvalue;
+}
+
+
 void AFPSCharacter::ServerOnShoot_Implementation()
 {
 	if (AFPSGameState* const GameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
@@ -562,15 +595,8 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 				FCollisionQueryParams QueryParams;
 				QueryParams.AddIgnoredActor(this);
 				if (CurrentPrimary->AmmoLeftInMag > 0 && IsFiring == false && CurrentPrimary->CanFire == true) {
-					
-					if (IsZoomed)
-					{
-						ServerAddGunRecoil(CurrentPrimary->ZoomRecoilValue);
-					}
-					else
-					{
-						ServerAddGunRecoil(CurrentPrimary->RecoilValue);
-					}
+					AddRecoil();
+
 					UE_LOG(LogClass, Log, TEXT("Max Spread: %f"), CurrentPrimary->MaxSpread);
 					UE_LOG(LogClass, Log, TEXT("Accuracy value: %f"), AccuracySpreadValue);
 					if (CurrentPrimary->IsProjectile == false) {
@@ -751,6 +777,7 @@ void AFPSCharacter::BeginPlay()
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("We are using FPSCharacter."));
 	}
 	GetWorld()->GetTimerManager().SetTimer(UpdateTimer, this, &AFPSCharacter::Update, UpdateDelay, true);
+	bCanSwitchWeapon = true;
 }
 
 
@@ -778,13 +805,14 @@ void AFPSCharacter::ServerSwitchWeapon_Implementation()
 			{
 				if (MyWeapons.Num() > 1)
 				{
+					
 					if (bCanSwitchWeapon == true)
 					{
-						UE_LOG(LogClass, Log, TEXT("PENISSSSSSSSSSSSSSSSSSSSSS"));
+						
 						int32 PrimaryIndex = MyWeapons.Find(CurrentPrimary);
 						if (PrimaryIndex == NULL)
 						{
-							UE_LOG(LogClass, Log, TEXT("Couldn't find weapon"));
+							//UE_LOG(LogClass, Log, TEXT("Couldn't find weapon"));
 
 
 						}
@@ -815,13 +843,10 @@ void AFPSCharacter::ServerSwitchWeapon_Implementation()
 								CurrentPrimary = SecondaryGun;
 							}
 						}
-						//bCanSwitchWeapon = false;
+						bCanSwitchWeapon = false;
 						GetWorld()->GetTimerManager().SetTimer(WeaponSwitchDelayTimer, this, &AFPSCharacter::SetCanSwitchWeapon, WeaponSwitchDelay, false);
 					}
-					else
-					{
-						UE_LOG(LogClass, Log, TEXT("something is wrong"));
-					}
+
 				}
 				else
 				{

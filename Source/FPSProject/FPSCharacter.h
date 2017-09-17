@@ -45,6 +45,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 		float WeaponSwitchDelay = 1.0f;
 	UPROPERTY(EditAnywhere, Category = "Weapon")
+		FRotator RecoilGoalRotation;
+	UPROPERTY(EditAnywhere, Category = "Weapon")
 		FTimerHandle WeaponSwitchDelayTimer;
 	UPROPERTY(Replicated, EditAnywhere, Category = "Weapon")
 		bool bCanSwitchWeapon = true;
@@ -111,6 +113,8 @@ public:
 		float simASV = 0;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
 		bool IsZoomed = false;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+		bool IsRecoiling = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float HealthPercentage;
@@ -165,10 +169,12 @@ public:
 		void SetShotMULTI(FVector Location, FVector Direction);
 	UFUNCTION(Server,WithValidation,Reliable)
 		void GenerateShotMULTI();
-	UFUNCTION(Reliable, NetMultiCast, WithValidation, Category = "Health")
+	UFUNCTION(Reliable, NetMultiCast, WithValidation, Category = "Weapon")
 		void Zoom();
-	UFUNCTION(Reliable, NetMultiCast, WithValidation, Category = "Health")
+	UFUNCTION(Reliable, NetMultiCast, WithValidation, Category = "Weapon")
 		void SetIsZoomed(bool zoomvalue);
+	UFUNCTION(Reliable, NetMultiCast, Category = "Weapon")
+		void SetIsRecoiling(bool recoilvalue);
 	UFUNCTION(Reliable, NetMultiCast)
 		void SetPickingUpWeapon(bool IsPickingUpWeapon);
 	UFUNCTION(BlueprintCallable, Category = "Health")
@@ -245,6 +251,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 		FTimerHandle ZoomTimer;
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+		FTimerHandle RecoilTimer;
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 		FTimerHandle HealthRechargeTimer;
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 		FTimerHandle HealthRechargeDELTATimer;
@@ -300,6 +308,8 @@ public:
 
 	UFUNCTION(Reliable, Server, WithValidation)
 		virtual void ServerOnZoom();
+	UFUNCTION(Reliable, NetMulticast)
+		virtual void AddRecoil();
 	UFUNCTION(Reliable, NetMulticast, WithValidation)
 		void GrenadeNearby();
 	UFUNCTION(Reliable, Server, WithValidation)
@@ -307,8 +317,7 @@ public:
 
 	UFUNCTION(Reliable, Server, WithValidation)
 		virtual void ServerOnShoot();
-	UFUNCTION(Reliable, NetMultiCast, WithValidation)
-		virtual void ServerAddGunRecoil(float RecoilValue);
+
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void OnStopShoot();

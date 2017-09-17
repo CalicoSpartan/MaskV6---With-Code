@@ -60,6 +60,10 @@ public:
 		float RecoilValue;
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 		float ZoomRecoilValue;
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+		float RecoilRate;
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+		float ZoomRecoilRate;
 	UPROPERTY(Replicated,EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 		int32 TotalAmmo;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Weapon")
