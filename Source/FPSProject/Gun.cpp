@@ -15,6 +15,8 @@ AGun::AGun()
 	TotalAmmo = 0;
 	AmmoLeftInMag = 0;
 	MagazineSize = 0;
+	
+	
 	//gun doesn't need to tick
 	PrimaryActorTick.bCanEverTick = false;
 	//static mesh actor disables overlap events by default, which we need to re-enable
@@ -55,9 +57,14 @@ bool AGun::EndReload_Validate()
 {
 	return true;
 }
-
+void AGun::BeginPlay()
+{
+	Super::BeginPlay();
+	MinNetUpdateFrequency = 15.0f;
+}
 void AGun::ChangeAmmo(int32 Ammo, int32 Mag)
 {
+	UE_LOG(LogClass, Log, TEXT("UpdateFreq: %f"), MinNetUpdateFrequency);
 	if (Role == ROLE_Authority)
 	{
 		UE_LOG(LogClass, Log, TEXT("ChangedAmmoFrom - Server"));

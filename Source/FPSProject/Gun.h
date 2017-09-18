@@ -131,7 +131,7 @@ public:
 protected:
 
 
-
+	virtual void BeginPlay() override;
 
 	//true when the pickup can be used, false when the pickup is deactivated
 	UPROPERTY(Replicated = OnRep_IsActive)
@@ -139,6 +139,8 @@ protected:
 	//this is called whenever bIsActive is updated
 	UFUNCTION()
 		virtual void OnRep_IsActive();
+	
+		//virtual void OnRep_IsActive();
 
 
 
