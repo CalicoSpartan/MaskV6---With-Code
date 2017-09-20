@@ -60,11 +60,11 @@ bool AGun::EndReload_Validate()
 void AGun::BeginPlay()
 {
 	Super::BeginPlay();
-	MinNetUpdateFrequency = 15.0f;
+	
 }
 void AGun::ChangeAmmo(int32 Ammo, int32 Mag)
 {
-	UE_LOG(LogClass, Log, TEXT("UpdateFreq: %f"), MinNetUpdateFrequency);
+	//UE_LOG(LogClass, Log, TEXT("UpdateFreq: %f"), MinNetUpdateFrequency);
 	if (Role == ROLE_Authority)
 	{
 		UE_LOG(LogClass, Log, TEXT("ChangedAmmoFrom - Server"));
@@ -213,6 +213,7 @@ void AGun::DroppedBy(APawn * Pawn)
 	
 	if (Role == ROLE_Authority)
 	{
+		MinNetUpdateFrequency = 2.0f;
 		ClientOnDroppedBy(Pawn);
 		DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
 		GetStaticMeshComponent()->SetSimulatePhysics(true);
@@ -242,7 +243,7 @@ void AGun::PickedUpBy(APawn * Pawn)
 		WeaponInstigator = Pawn;
 		//Notify clients of the picked up action
 		ClientOnPickedUpBy(Pawn);
-
+		MinNetUpdateFrequency = 15.0f;
 		if (AFPSCharacter* const AttachedPlayer = Cast<AFPSCharacter>(Pawn)) {
 			UE_LOG(LogClass, Log, TEXT("%s was picked up by %s"), *GetName(), *Pawn->GetName());
 
