@@ -875,10 +875,12 @@ void AFPSCharacter::PickupWeapon_Implementation()
 
 void AFPSCharacter::DeadDropWeapon()
 {
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	if (PrimaryInstance != NULL)
 	{
 		
-		AGun* DroppedPrimary = GetWorld()->SpawnActor<AGun>(PrimaryInstance->GetClass(), MyDeathLocation, FRotator::ZeroRotator);
+		AGun* DroppedPrimary = GetWorld()->SpawnActor<AGun>(PrimaryInstance->GetClass(), MyDeathLocation, FRotator::ZeroRotator,SpawnParams);
 		if (Role == ROLE_Authority)
 		{
 			UE_LOG(LogClass, Log, TEXT("Changing ammo from server"));
@@ -893,7 +895,7 @@ void AFPSCharacter::DeadDropWeapon()
 	if (SecondaryInstance != NULL)
 	{
 
-		AGun* DroppedSecondary = GetWorld()->SpawnActor<AGun>(SecondaryInstance->GetClass(), MyDeathLocation, FRotator::ZeroRotator);
+		AGun* DroppedSecondary = GetWorld()->SpawnActor<AGun>(SecondaryInstance->GetClass(), MyDeathLocation, FRotator::ZeroRotator,SpawnParams);
 		if (Role == ROLE_Authority)
 		{
 			UE_LOG(LogClass, Log, TEXT("Changing ammo from server"));
@@ -903,6 +905,14 @@ void AFPSCharacter::DeadDropWeapon()
 		{
 			UE_LOG(LogClass, Log, TEXT("Changing ammo from client"));
 			DroppedSecondary->ServerChangeAmmo(DroppedSecondary->MaxAmmo - (SecondaryInstance->MaxAmmo - SecondaryInstance->TotalAmmo), DroppedSecondary->MagazineSize - (SecondaryInstance->MagazineSize - SecondaryInstance->AmmoLeftInMag));
+		}
+	}
+
+	for (int32 i = 0; i < Grenades.Num(); ++i)
+	{
+		if (ABaseGrenade* gren = Cast<ABaseGrenade>(Grenades[i]))
+		{
+			ABaseGrenade* DroppedGrenade = GetWorld()->SpawnActor<ABaseGrenade>(gren->GetClass(), MyDeathLocation, FRotator::ZeroRotator,SpawnParams);
 		}
 	}
 	
