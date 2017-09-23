@@ -10,7 +10,12 @@ void AFPSPlayerController::OnKilled()
 
 	UnPossess();
 	UE_LOG(LogClass, Log, TEXT("should respawn"));
-	GetWorldTimerManager().SetTimer(TimerHandle_Respawn, this, &AFPSPlayerController::Respawn, 5.0f);
+	if (AFPSPlayerState* myPlayerState = Cast<AFPSPlayerState>(PlayerState))
+	{
+		myPlayerState->bIsSpectator = true;
+	}
+	ChangeState(NAME_Spectating);
+	GetWorldTimerManager().SetTimer(TimerHandle_Respawn, this, &AFPSPlayerController::Respawn, 600.0f);
 
 }
 
@@ -76,6 +81,7 @@ void AFPSPlayerController::Respawn()
 	AGameModeBase * GameMode = GetWorld()->GetAuthGameMode();
 	if (GameMode)
 	{
+		ChangeState(NAME_Playing);
 
 		ServerRespawnPlayer();
 	}
