@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "FPSPlayerState.h"
+#include "Spectator_Controller.h"
 #include "BaseTeam.h"
 #include "FPSPlayerController.generated.h"
 
@@ -53,7 +54,8 @@ public:
 
 	virtual void BeginPlay() override;
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class ASpectator_Controller> SpectatorControllerSUB;
 	UPROPERTY(Replicated,EditAnywhere, BlueprintReadWrite, Category = "Interface")
 		int32 MyTeamScore = 0;
 
@@ -101,7 +103,7 @@ public:
 		int32 GetScore();
 
 	void OnKilled();
-
+	void PossessCharacter(APawn* character, APlayerController* thecontroller);
 	void Respawn();
 	UPROPERTY(VisibleAnywhere, Category = "PlayerState")
 		AFPSPlayerState* MyPlayerState;

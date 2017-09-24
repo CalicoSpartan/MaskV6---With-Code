@@ -23,9 +23,9 @@ public:
 	AFPSProjectGameModeBase();
 	bool callscoreboard = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameStats")
-		TArray<AFPSPlayerController*> Team1PlayerControllers;
+		TArray<class AFPSPlayerController*> Team1PlayerControllers;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameStats")
-		TArray<AFPSPlayerController*> Team2PlayerControllers;
+		TArray<class AFPSPlayerController*> Team2PlayerControllers;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Teams")
 		TArray<ABaseTeam*> Teams;
 

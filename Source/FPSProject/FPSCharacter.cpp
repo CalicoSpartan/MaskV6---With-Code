@@ -293,24 +293,25 @@ void AFPSCharacter::OnPlayerDeath_Implementation()
 			GetMesh()->AddForce(LastHitDirection);
 		}
 	}
-	
-	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	if (Role == ROLE_Authority)
 	{
-		if (Iterator->Get()->AcknowledgedPawn == this) {
-			APlayerController* PController = Iterator->Get();
-			AFPSPlayerController* PC = Cast<AFPSPlayerController>(PController);
-			if (PC)
-			{
+		for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+		{
+			if (Iterator->Get()->AcknowledgedPawn == this) {
+				APlayerController* PController = Iterator->Get();
+				AFPSPlayerController* PC = Cast<AFPSPlayerController>(PController);
+				if (PC)
+				{
 
-				PC->OnKilled();
-			}
-			else
-			{
-				UE_LOG(LogClass, Log, TEXT("cast failed"));
+					PC->OnKilled();
+				}
+				else
+				{
+					UE_LOG(LogClass, Log, TEXT("cast failed"));
+				}
 			}
 		}
 	}
-
 
 
 }

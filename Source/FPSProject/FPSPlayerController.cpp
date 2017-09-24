@@ -8,15 +8,41 @@
 void AFPSPlayerController::OnKilled()
 {
 
-	UnPossess();
-	UE_LOG(LogClass, Log, TEXT("should respawn"));
-	if (AFPSPlayerState* myPlayerState = Cast<AFPSPlayerState>(PlayerState))
-	{
-		myPlayerState->bIsSpectator = true;
-	}
-	ChangeState(NAME_Spectating);
-	GetWorldTimerManager().SetTimer(TimerHandle_Respawn, this, &AFPSPlayerController::Respawn, 600.0f);
 
+	UnPossess();
+	
+	GetWorldTimerManager().SetTimer(TimerHandle_Respawn, this, &AFPSPlayerController::Respawn, 5.0f);
+	
+	if (Role == ROLE_Authority)
+	{
+		ASpectator_Controller* SpectatorController = GetWorld()->SpawnActor<ASpectator_Controller>(SpectatorControllerSUB, AcknowledgedPawn->GetActorLocation(), FRotator::ZeroRotator);
+		if (AFPSCharacter* character = Cast<AFPSCharacter>(AcknowledgedPawn))
+		{
+			SpectatorController->FollowedCharacter = character;
+		}
+		if (SpectatorController != NULL)
+		{
+			UE_LOG(LogClass, Log, TEXT("spectator controller exists"));
+		}
+		else
+		{
+			UE_LOG(LogClass, Log, TEXT("spectator controller NULL"));
+		}
+		if (APlayerController* testcol = Cast<APlayerController>(this))
+		{
+			PossessCharacter(SpectatorController, testcol);
+			UE_LOG(LogClass, Log, TEXT("Possesing"));
+		}
+		//Possess(SpectatorController);
+
+	}
+
+
+}
+
+void AFPSPlayerController::PossessCharacter(APawn * character, APlayerController * thecontroller)
+{
+	thecontroller->Possess(character);
 }
 
 
@@ -77,11 +103,11 @@ int32 AFPSPlayerController::GetKills()
 
 void AFPSPlayerController::Respawn()
 {
-
+	UnPossess();
 	AGameModeBase * GameMode = GetWorld()->GetAuthGameMode();
 	if (GameMode)
 	{
-		ChangeState(NAME_Playing);
+		//ChangeState(NAME_Playing);
 
 		ServerRespawnPlayer();
 	}
