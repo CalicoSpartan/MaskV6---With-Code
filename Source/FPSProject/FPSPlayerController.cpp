@@ -7,19 +7,19 @@
 
 void AFPSPlayerController::OnKilled()
 {
-
-
+	AFPSCharacter* followedcharacter = NULL;
+	if (AFPSCharacter* mycharacter = Cast<AFPSCharacter>(AcknowledgedPawn))
+	{
+		followedcharacter = mycharacter;
+	}
 	UnPossess();
 	
 	GetWorldTimerManager().SetTimer(TimerHandle_Respawn, this, &AFPSPlayerController::Respawn, 5.0f);
 	
 	if (Role == ROLE_Authority)
 	{
-		ASpectator_Controller* SpectatorController = GetWorld()->SpawnActor<ASpectator_Controller>(SpectatorControllerSUB, AcknowledgedPawn->GetActorLocation(), FRotator::ZeroRotator);
-		if (AFPSCharacter* character = Cast<AFPSCharacter>(AcknowledgedPawn))
-		{
-			SpectatorController->FollowedCharacter = character;
-		}
+		ASpectator_Controller* SpectatorController = GetWorld()->SpawnActor<ASpectator_Controller>(SpectatorControllerSUB, AcknowledgedPawn->GetActorLocation(), FRotator(-10.0f,0.0f,0.0f));
+
 		if (SpectatorController != NULL)
 		{
 			UE_LOG(LogClass, Log, TEXT("spectator controller exists"));
@@ -30,9 +30,15 @@ void AFPSPlayerController::OnKilled()
 		}
 		if (APlayerController* testcol = Cast<APlayerController>(this))
 		{
+			if (followedcharacter != NULL)
+			{
+				SpectatorController->FollowedCharacter = followedcharacter;
+			}
 			PossessCharacter(SpectatorController, testcol);
 			UE_LOG(LogClass, Log, TEXT("Possesing"));
+
 		}
+
 		//Possess(SpectatorController);
 
 	}

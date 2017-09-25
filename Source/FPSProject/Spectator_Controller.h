@@ -33,9 +33,13 @@ public:
 		float MaxPitch;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float MinPitch;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+		bool AttachedToMesh = false;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Replicated)
 		class AFPSCharacter* FollowedCharacter;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+		FVector LastKnownPlayerLocation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FName PlayerName;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -52,12 +56,20 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION()
 		void AddYawRotation(float Value);
 	UFUNCTION()
 		void AddPitchRotation(float Value);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerUpdatePosition(FVector NewPosition);
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+		void ServerUpdateYaw(float Value);
+	UFUNCTION(NetMulticast, Reliable, WithValidation)
+		void ServerUpdatePitch(float Value);
+	UFUNCTION()
+		void UpdatePosition(FVector NewPosition);
 
 
 	
