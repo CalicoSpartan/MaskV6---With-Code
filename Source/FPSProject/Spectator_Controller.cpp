@@ -24,7 +24,7 @@ ASpectator_Controller::ASpectator_Controller()
 void ASpectator_Controller::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	NetUpdateFrequency = 20.0f;
 }
 
 void ASpectator_Controller::ServerUpdatePosition_Implementation(FVector NewPosition)
@@ -53,7 +53,7 @@ void ASpectator_Controller::UpdatePosition(FVector NewPosition)
 		//UE_LOG(LogClass, Log, TEXT("%s"), *LastKnownPlayerLocation.ToString());
 		if (Role == ROLE_Authority)
 		{
-			SetActorLocation(LastKnownPlayerLocation);
+			SetActorLocation(LastKnownPlayerLocation + FVector(0,0,20.0f));
 			//UE_LOG(LogClass, Log, TEXT("location: %s"), *FollowedCharacter->GetMesh()->GetComponentLocation().ToString());
 			
 		}
@@ -85,21 +85,33 @@ void ASpectator_Controller::Tick(float DeltaTime)
 
 		if (FollowedCharacter)
 		{
+			/*
 			if (AttachedToMesh == false)
 			{
-				//FAttachmentTransformRules* Rules = nullptr;
+				FAttachmentTransformRules Rules = FAttachmentTransformRules{ EAttachmentRule::SnapToTarget,false };
+				Rules.RotationRule = EAttachmentRule::KeepRelative;
+				/*
+				if (Rules != NULL)
+				{
+					Rules->RotationRule = EAttachmentRule::KeepRelative;
+					UE_LOG(LogClass, Log, TEXT("rules exists"));
+
+				}
+				else
+				{
+					UE_LOG(LogClass, Log, TEXT("rules does not exists"));
+				}
 				
-				//Rules->RotationRule = EAttachmentRule::KeepRelative;
-			
 				//FAttachmentTransformRules::RotationRule = EAttachmentRule::KeepRelative;
-				MyRoot->AttachToComponent(FollowedCharacter->GetMesh(),FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+				MyRoot->AttachToComponent(FollowedCharacter->GetMesh(),Rules);
 				//CameraBoom->parent
 				AttachedToMesh = true;
 			}
+			*/
 			//MyRoot->SetupAttachment(FollowedCharacter->GetMesh());
 			LastKnownPlayerLocation = FollowedCharacter->GetMesh()->GetComponentLocation();
 			//UE_LOG(LogClass, Log, TEXT("Server"));
-			//UpdatePosition(LastKnownPlayerLocation);
+			UpdatePosition(LastKnownPlayerLocation);
 			
 		}
 	}
@@ -161,7 +173,7 @@ void ASpectator_Controller::ServerUpdatePitch_Implementation(float Value)
 	if (FollowedCharacter)
 	{
 
-		float RotationValue = Value * RotationSpeedMultiplier;
+		float RotationValue = -Value * RotationSpeedMultiplier;
 		SetActorRotation(FRotator(GetActorRotation().Pitch + RotationValue, GetActorRotation().Yaw, GetActorRotation().Roll));
 		//AddPitchRotation(RotationValue);
 		//CameraBoom->AddLocalRotation(FRotator(RotationValue, 0.0f, 0.0f).Quaternion());

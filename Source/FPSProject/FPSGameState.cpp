@@ -250,6 +250,7 @@ void AFPSGameState::Update()
 							Player->Shooter = Player;
 						}
 						//UE_LOG(LogClass, Log, TEXT("KILLED"));
+						
 
 						if (AFPSPlayerController* FPSController = Cast<AFPSPlayerController>(PlayerController))
 						{

@@ -58,9 +58,22 @@ AFPSCharacter::AFPSCharacter()
 	InitialHealth = 100.0f;
 	CurrentHealth = InitialHealth;
 	HealthPercentage = 1.0f;
-
+	
 
 }
+
+bool AFPSCharacter::DestroySelf_Validate()
+{
+	return true;
+}
+void AFPSCharacter::DestroySelf_Implementation()
+{
+	if (Role == ROLE_Authority)
+	{
+		Destroy();
+	}
+}
+
 void AFPSCharacter::ShowEnemyName_Implementation(class AFPSCharacter* Enemy)
 {
 	ShowEnemyNameBluePrint(Enemy);
@@ -209,6 +222,7 @@ void AFPSCharacter::OnPlayerDeath_Implementation()
 	// disconnect controller from pawn
 	DetachFromControllerPendingDestroy();
 	MyDeathLocation = GetActorLocation();
+
 	if (GetMesh())
 	{
 		static FName CollisionProfileName(TEXT("Ragdoll"));

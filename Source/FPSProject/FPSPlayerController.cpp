@@ -7,7 +7,7 @@
 
 void AFPSPlayerController::OnKilled()
 {
-	AFPSCharacter* followedcharacter = NULL;
+	followedcharacter = NULL;
 	if (AFPSCharacter* mycharacter = Cast<AFPSCharacter>(AcknowledgedPawn))
 	{
 		followedcharacter = mycharacter;
@@ -109,6 +109,10 @@ int32 AFPSPlayerController::GetKills()
 
 void AFPSPlayerController::Respawn()
 {
+	if (AcknowledgedPawn != NULL)
+	{
+		AcknowledgedPawn->Destroy();
+	}
 	UnPossess();
 	AGameModeBase * GameMode = GetWorld()->GetAuthGameMode();
 	if (GameMode)

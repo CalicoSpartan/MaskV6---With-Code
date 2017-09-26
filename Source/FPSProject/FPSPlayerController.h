@@ -21,6 +21,7 @@ class FPSPROJECT_API AFPSPlayerController : public APlayerController
 
 public:
 
+	class AFPSCharacter* followedcharacter;
 	UFUNCTION(Server, Reliable, WithValidation)
 		void TriggerAddAliveUI();
 	virtual void TriggerAddAliveUI_Implementation();

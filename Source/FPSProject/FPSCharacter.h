@@ -335,5 +335,8 @@ public:
 
 	UPROPERTY(Replicated, EditDefaultsOnly)
 		APawn* Shooter;
+	FTimerHandle DeathTimer;
+	UFUNCTION(Server,Reliable,WithValidation)
+	void DestroySelf();
 
 };
