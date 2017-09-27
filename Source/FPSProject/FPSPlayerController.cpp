@@ -32,8 +32,23 @@ void AFPSPlayerController::OnKilled()
 		{
 			if (followedcharacter != NULL)
 			{
+				if (AFPSPlayerController* me = Cast<AFPSPlayerController>(this))
+				{
+					SpectatorController->FollowedController = me;
+				}
+				
 				SpectatorController->FollowedCharacter = followedcharacter;
+				if (AFPSPlayerState* characterPlayerState = Cast<AFPSPlayerState>(PlayerState))
+				{
+					SpectatorController->SetTeammateStates(characterPlayerState->Team->TeamPlayerStates);
+					
+				}
+				else
+				{
+					
+				}
 			}
+
 			PossessCharacter(SpectatorController, testcol);
 			UE_LOG(LogClass, Log, TEXT("Possesing"));
 

@@ -769,7 +769,10 @@ void AFPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	CurrentState = EPlayerState::EPlayerPlaying;
-
+	if (AFPSPlayerState* myPS = Cast<AFPSPlayerState>(PlayerState))
+	{
+		myPS->SetMyCharacter(this);
+	}
 	switch (GetCurrentState())
 	{
 	case EPlayerState::EPlayerWaiting:

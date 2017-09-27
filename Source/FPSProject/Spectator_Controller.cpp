@@ -20,6 +20,13 @@ ASpectator_Controller::ASpectator_Controller()
 	//bUseControllerRotationYaw = true;
 }
 
+
+void ASpectator_Controller::SetTeammateStates_Implementation(const TArray<AFPSPlayerState*>& TeamStates)
+{
+	TeammateStates = TeamStates;
+	//UE_LOG(LogClass, Log, TEXT("How Many Teammates: %d"), TeammateStates.Num());
+}
+
 // Called when the game starts or when spawned
 void ASpectator_Controller::BeginPlay()
 {
@@ -35,9 +42,13 @@ void ASpectator_Controller::ServerUpdatePosition_Implementation(FVector NewPosit
 void ASpectator_Controller::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ASpectator_Controller, FollowedController);
 	DOREPLIFETIME(ASpectator_Controller, FollowedCharacter);
 	DOREPLIFETIME(ASpectator_Controller, LastKnownPlayerLocation);
 	DOREPLIFETIME(ASpectator_Controller, AttachedToMesh);
+	DOREPLIFETIME(ASpectator_Controller, TeammateCharacters);
+	DOREPLIFETIME(ASpectator_Controller, TeammateStates);
+	DOREPLIFETIME(ASpectator_Controller, CurrentTeamIndex);
 }
 
 bool ASpectator_Controller::ServerUpdatePosition_Validate(FVector NewPosition)
@@ -137,6 +148,7 @@ void ASpectator_Controller::SetupPlayerInputComponent(UInputComponent* PlayerInp
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	PlayerInputComponent->BindAxis("Turn", this, &ASpectator_Controller::ServerUpdateYaw);
 	PlayerInputComponent->BindAxis("LookUp", this, &ASpectator_Controller::ServerUpdatePitch);
+	PlayerInputComponent->BindAction("ChangeSpectator", IE_Released, this, &ASpectator_Controller::ServerChangePlayer);
 }
 
 void ASpectator_Controller::AddYawRotation(float Value)
@@ -178,4 +190,55 @@ void ASpectator_Controller::ServerUpdatePitch_Implementation(float Value)
 		//AddPitchRotation(RotationValue);
 		//CameraBoom->AddLocalRotation(FRotator(RotationValue, 0.0f, 0.0f).Quaternion());
 	}
+}
+
+void ASpectator_Controller::ServerChangePlayer_Implementation()
+{
+	UE_LOG(LogClass, Log, TEXT("I was called"));
+	if (FollowedCharacter) {
+		UE_LOG(LogClass, Log, TEXT("followedcharacter exists"));
+		if (FollowedController)
+		{
+			UE_LOG(LogClass, Log, TEXT("followedcontroller exists"));
+			if (TeammateStates.Num() > 0) {
+				UE_LOG(LogClass, Log, TEXT("teamstates length > 0"));
+				if (AFPSPlayerState* followedCharacterPS = Cast<AFPSPlayerState>(FollowedController->PlayerState))
+				{
+					if (TeammateStates.Find(followedCharacterPS) != -1)
+					{
+						CurrentTeamIndex = TeammateStates.Find(followedCharacterPS);
+						if (CurrentTeamIndex == TeammateStates.Num() - 1)
+						{
+
+							for (int32 i = 0; i < TeammateStates.Num(); ++i)
+							{
+								if (i != CurrentTeamIndex)
+								{
+									if (TeammateStates[i]->MyCharacter->GetCurrentState() != EPlayerState::EPlayerDead)
+									{
+										FollowedCharacter = TeammateStates[i]->MyCharacter;
+										return;
+									}
+								}
+							}
+						}
+						else
+						{
+							for (int32 i = CurrentTeamIndex + 1; i < TeammateStates.Num(); ++i)
+							{
+								if (TeammateStates[i]->MyCharacter->GetCurrentState() != EPlayerState::EPlayerDead)
+								{
+									FollowedCharacter = TeammateStates[i]->MyCharacter;
+									return;
+								}
+							}
+
+						}
+					}
+
+				}
+			}
+		}
+	}
+	
 }

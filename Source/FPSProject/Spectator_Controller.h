@@ -6,6 +6,8 @@
 #include "GameFramework/Pawn.h"
 #include "Runtime/Engine/Classes/GameFramework/SpringArmComponent.h"
 #include "FPSCharacter.h"
+#include "FPSPlayerState.h"
+#include "FPSPlayerController.h"
 #include "Spectator_Controller.generated.h"
 
 
@@ -39,11 +41,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,Replicated)
 		class AFPSCharacter* FollowedCharacter;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+		class AFPSPlayerController* FollowedController;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+		TArray<class AFPSCharacter*> TeammateCharacters;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+		TArray<class AFPSPlayerState*> TeammateStates;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+		int32 CurrentTeamIndex = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
 		FVector LastKnownPlayerLocation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FName PlayerName;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float RotationSpeedMultiplier;
+
+	UFUNCTION(NetMulticast,Reliable)
+		void SetTeammateStates(const TArray<AFPSPlayerState*>& TeamStates);
 
 
 protected:
@@ -68,6 +81,8 @@ public:
 		void ServerUpdateYaw(float Value);
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 		void ServerUpdatePitch(float Value);
+	UFUNCTION(NetMulticast, Reliable)
+		void ServerChangePlayer();
 	UFUNCTION()
 		void UpdatePosition(FVector NewPosition);
 

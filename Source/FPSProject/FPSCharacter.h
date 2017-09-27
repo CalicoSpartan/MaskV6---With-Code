@@ -7,7 +7,7 @@
 #include "Components/BoxComponent.h"
 #include "BaseGrenade.h"
 #include "FragGrenade.h"
-
+#include "FPSPlayerState.h"
 #include "Runtime/Engine/Public/CollisionQueryParams.h"
 #include "FPSGameState.h"
 #include "Gun.h"

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "BaseTeam.h"
 #include "GameFramework/PlayerState.h"
+#include "FPSCharacter.h"
 #include "FPSPlayerState.generated.h"
 
 /**
@@ -49,12 +50,16 @@ public:
 		void SetTeam(class ABaseTeam* MyTeam);
 	UFUNCTION(NetMultiCast, Reliable, Category = "Team")
 		void SetRivalTeam(class ABaseTeam* NewRivalTeam);
+	UFUNCTION(NetMultiCast, Reliable)
+		void SetMyCharacter(class AFPSCharacter* NewCharacter);
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Team")
 		class ABaseTeam* RivalTeam;
 
 	UPROPERTY(Replicated,EditAnywhere, BlueprintReadOnly,Category = "Team")
 		class ABaseTeam* Team;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Team")
+		class AFPSCharacter* MyCharacter;
 
 
 private:

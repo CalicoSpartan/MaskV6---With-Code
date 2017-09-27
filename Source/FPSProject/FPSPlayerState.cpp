@@ -16,6 +16,11 @@ void AFPSPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(AFPSPlayerState, Deaths);
 	DOREPLIFETIME(AFPSPlayerState, Assists);
 	DOREPLIFETIME(AFPSPlayerState, Team);
+	DOREPLIFETIME(AFPSPlayerState, MyCharacter);
+}
+void AFPSPlayerState::SetMyCharacter_Implementation(class AFPSCharacter* NewCharacter)
+{
+	MyCharacter = NewCharacter;
 }
 
 void AFPSPlayerState::SetTeam_Implementation(class ABaseTeam* MyTeam)
