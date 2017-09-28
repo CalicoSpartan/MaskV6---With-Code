@@ -121,7 +121,7 @@ void ASpectator_Controller::Tick(float DeltaTime)
 			*/
 			//MyRoot->SetupAttachment(FollowedCharacter->GetMesh());
 			LastKnownPlayerLocation = FollowedCharacter->GetMesh()->GetComponentLocation();
-			//UE_LOG(LogClass, Log, TEXT("Server"));
+			UE_LOG(LogClass, Log, TEXT("FollowedCharacterName: %s"),*FollowedCharacter->GetName());
 			UpdatePosition(LastKnownPlayerLocation);
 			
 		}
@@ -192,6 +192,16 @@ void ASpectator_Controller::ServerUpdatePitch_Implementation(float Value)
 	}
 }
 
+bool ASpectator_Controller::SetFollowedCharacter_Validate(AFPSCharacter* newCharacter)
+{
+	return true;
+}
+
+void ASpectator_Controller::SetFollowedCharacter_Implementation(AFPSCharacter* newCharacter)
+{
+	FollowedCharacter = newCharacter;
+}
+
 void ASpectator_Controller::ServerChangePlayer_Implementation()
 {
 	UE_LOG(LogClass, Log, TEXT("I was called"));
@@ -206,17 +216,21 @@ void ASpectator_Controller::ServerChangePlayer_Implementation()
 				{
 					if (TeammateStates.Find(followedCharacterPS) != -1)
 					{
+						UE_LOG(LogClass, Log, TEXT("character is on team"));
 						CurrentTeamIndex = TeammateStates.Find(followedCharacterPS);
 						if (CurrentTeamIndex == TeammateStates.Num() - 1)
 						{
-
+							UE_LOG(LogClass, Log, TEXT("last player"));
 							for (int32 i = 0; i < TeammateStates.Num(); ++i)
 							{
 								if (i != CurrentTeamIndex)
 								{
 									if (TeammateStates[i]->MyCharacter->GetCurrentState() != EPlayerState::EPlayerDead)
 									{
-										FollowedCharacter = TeammateStates[i]->MyCharacter;
+										//FollowedCharacter = TeammateStates[i]->MyCharacter;
+										//SetFollowedCharacter(TeammateStates[i]->MyCharacter);
+										UE_LOG(LogClass, Log, TEXT("found player 1"));
+										UE_LOG(LogClass, Log, TEXT("new follow name: %s"), *TeammateStates[i]->MyCharacter->GetName());
 										return;
 									}
 								}
@@ -224,11 +238,15 @@ void ASpectator_Controller::ServerChangePlayer_Implementation()
 						}
 						else
 						{
+							UE_LOG(LogClass, Log, TEXT("not last player"));
 							for (int32 i = CurrentTeamIndex + 1; i < TeammateStates.Num(); ++i)
 							{
 								if (TeammateStates[i]->MyCharacter->GetCurrentState() != EPlayerState::EPlayerDead)
 								{
-									FollowedCharacter = TeammateStates[i]->MyCharacter;
+									//FollowedCharacter = TeammateStates[i]->MyCharacter;
+								
+									//SetFollowedCharacter(TeammateStates[i]->MyCharacter);
+									UE_LOG(LogClass, Log, TEXT("new follow2 name: %s"), *TeammateStates[i]->MyCharacter->GetName());
 									return;
 								}
 							}

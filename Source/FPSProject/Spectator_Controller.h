@@ -54,7 +54,8 @@ public:
 		FName PlayerName;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float RotationSpeedMultiplier;
-
+	UFUNCTION(Server,WithValidation, Reliable)
+		void SetFollowedCharacter(AFPSCharacter* newCharacter);
 	UFUNCTION(NetMulticast,Reliable)
 		void SetTeammateStates(const TArray<AFPSPlayerState*>& TeamStates);
 
