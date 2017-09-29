@@ -50,7 +50,7 @@ public:
 		void SetTeam(class ABaseTeam* MyTeam);
 	UFUNCTION(NetMultiCast, Reliable, Category = "Team")
 		void SetRivalTeam(class ABaseTeam* NewRivalTeam);
-	UFUNCTION(NetMultiCast, Reliable)
+	UFUNCTION(NetMulticast, Reliable,WithValidation)
 		void SetMyCharacter(class AFPSCharacter* NewCharacter);
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Team")

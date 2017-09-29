@@ -121,7 +121,7 @@ void ASpectator_Controller::Tick(float DeltaTime)
 			*/
 			//MyRoot->SetupAttachment(FollowedCharacter->GetMesh());
 			LastKnownPlayerLocation = FollowedCharacter->GetMesh()->GetComponentLocation();
-			UE_LOG(LogClass, Log, TEXT("FollowedCharacterName: %s"),*FollowedCharacter->GetName());
+			//UE_LOG(LogClass, Log, TEXT("FollowedCharacterName: %s"),*FollowedCharacter->GetName());
 			UpdatePosition(LastKnownPlayerLocation);
 			
 		}
@@ -202,9 +202,15 @@ void ASpectator_Controller::SetFollowedCharacter_Implementation(AFPSCharacter* n
 	FollowedCharacter = newCharacter;
 }
 
+bool ASpectator_Controller::ServerChangePlayer_Validate()
+{
+	return true;
+}
+
 void ASpectator_Controller::ServerChangePlayer_Implementation()
 {
 	UE_LOG(LogClass, Log, TEXT("I was called"));
+	
 	if (FollowedCharacter) {
 		UE_LOG(LogClass, Log, TEXT("followedcharacter exists"));
 		if (FollowedController)
@@ -220,7 +226,8 @@ void ASpectator_Controller::ServerChangePlayer_Implementation()
 						CurrentTeamIndex = TeammateStates.Find(followedCharacterPS);
 						if (CurrentTeamIndex == TeammateStates.Num() - 1)
 						{
-							UE_LOG(LogClass, Log, TEXT("last player"));
+							UE_LOG(LogClass, Log, TEXT("last player, team index: %d"),CurrentTeamIndex);
+							/*
 							for (int32 i = 0; i < TeammateStates.Num(); ++i)
 							{
 								if (i != CurrentTeamIndex)
@@ -235,21 +242,42 @@ void ASpectator_Controller::ServerChangePlayer_Implementation()
 									}
 								}
 							}
+							*/
+							
 						}
 						else
 						{
-							UE_LOG(LogClass, Log, TEXT("not last player"));
+							UE_LOG(LogClass, Log, TEXT("not last player, team index: %d"), CurrentTeamIndex);
+							
 							for (int32 i = CurrentTeamIndex + 1; i < TeammateStates.Num(); ++i)
 							{
-								if (TeammateStates[i]->MyCharacter->GetCurrentState() != EPlayerState::EPlayerDead)
+								if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(TeammateStates[i]))
 								{
-									//FollowedCharacter = TeammateStates[i]->MyCharacter;
-								
-									//SetFollowedCharacter(TeammateStates[i]->MyCharacter);
-									UE_LOG(LogClass, Log, TEXT("new follow2 name: %s"), *TeammateStates[i]->MyCharacter->GetName());
-									return;
+									if (ps->MyCharacter != NULL)
+									{
+										if (ps->MyCharacter->GetCurrentState() != EPlayerState::EPlayerDead)
+										{
+											UE_LOG(LogClass, Log, TEXT("new follow2 name: %s"), *TeammateStates[i]->MyCharacter->GetName());
+											return;
+										}
+
+										//FollowedCharacter = TeammateStates[i]->MyCharacter;
+
+										//SetFollowedCharacter(TeammateStates[i]->MyCharacter);
+
+									}
+									else
+									{
+										UE_LOG(LogClass, Log, TEXT("MyCharacter is NULL, %d"),i);
+									}
 								}
+								else
+								{
+									UE_LOG(LogClass, Log, TEXT("cast to player state failed"));
+								}
+
 							}
+							
 
 						}
 					}
@@ -258,5 +286,6 @@ void ASpectator_Controller::ServerChangePlayer_Implementation()
 			}
 		}
 	}
+	
 	
 }

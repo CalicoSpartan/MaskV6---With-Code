@@ -82,7 +82,7 @@ public:
 		void ServerUpdateYaw(float Value);
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 		void ServerUpdatePitch(float Value);
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(Server, Reliable,WithValidation)
 		void ServerChangePlayer();
 	UFUNCTION()
 		void UpdatePosition(FVector NewPosition);

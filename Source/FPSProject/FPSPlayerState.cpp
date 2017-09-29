@@ -18,9 +18,16 @@ void AFPSPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(AFPSPlayerState, Team);
 	DOREPLIFETIME(AFPSPlayerState, MyCharacter);
 }
+
+bool AFPSPlayerState::SetMyCharacter_Validate(class AFPSCharacter* NewCharacter)
+{
+	return true;
+}
+
 void AFPSPlayerState::SetMyCharacter_Implementation(class AFPSCharacter* NewCharacter)
 {
 	MyCharacter = NewCharacter;
+	UE_LOG(LogClass, Log, TEXT("Set MyCharacter to: %s"), *NewCharacter->GetName());
 }
 
 void AFPSPlayerState::SetTeam_Implementation(class ABaseTeam* MyTeam)

@@ -652,7 +652,7 @@ void AFPSProjectGameModeBase::BeginPlay()
 
 
 
-void AFPSProjectGameModeBase::HandleNewState(EGamePlayState NewState)
+void AFPSProjectGameModeBase::HandleNewState(enum EGamePlayState NewState)
 {
 	UWorld* World = GetWorld();
 	check(World);
