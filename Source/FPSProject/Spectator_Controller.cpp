@@ -64,7 +64,7 @@ void ASpectator_Controller::UpdatePosition(FVector NewPosition)
 		//UE_LOG(LogClass, Log, TEXT("%s"), *LastKnownPlayerLocation.ToString());
 		if (Role == ROLE_Authority)
 		{
-			SetActorLocation(LastKnownPlayerLocation + FVector(0,0,20.0f));
+			SetActorLocation(LastKnownPlayerLocation + FVector(0,0,90.0f));
 			//UE_LOG(LogClass, Log, TEXT("location: %s"), *FollowedCharacter->GetMesh()->GetComponentLocation().ToString());
 			
 		}
@@ -120,7 +120,8 @@ void ASpectator_Controller::Tick(float DeltaTime)
 			}
 			*/
 			//MyRoot->SetupAttachment(FollowedCharacter->GetMesh());
-			LastKnownPlayerLocation = FollowedCharacter->GetMesh()->GetComponentLocation();
+			LastKnownPlayerLocation = FollowedCharacter->GetMesh()->GetBoneLocation(FName(TEXT("head")));
+			//MyRoot->SetWorldRotation(FRotator(0, 0, 0));
 			//UE_LOG(LogClass, Log, TEXT("FollowedCharacterName: %s"),*FollowedCharacter->GetName());
 			UpdatePosition(LastKnownPlayerLocation);
 			
@@ -177,7 +178,7 @@ void ASpectator_Controller::ServerUpdateYaw_Implementation(float Value)
 		float RotationValue = Value * RotationSpeedMultiplier;
 		SetActorRotation(FRotator(GetActorRotation().Pitch, GetActorRotation().Yaw + RotationValue, GetActorRotation().Roll));
 		//AddYawRotation(RotationValue);
-		//CameraBoom->AddLocalRotation(FRotator(0.0f, RotationValue, 0.0f).Quaternion());
+		//CameraBoom->AddWorldRotation(FRotator(0.0f, RotationValue, 0.0f).Quaternion());
 	}
 }
 void ASpectator_Controller::ServerUpdatePitch_Implementation(float Value)
@@ -188,7 +189,8 @@ void ASpectator_Controller::ServerUpdatePitch_Implementation(float Value)
 		float RotationValue = -Value * RotationSpeedMultiplier;
 		SetActorRotation(FRotator(GetActorRotation().Pitch + RotationValue, GetActorRotation().Yaw, GetActorRotation().Roll));
 		//AddPitchRotation(RotationValue);
-		//CameraBoom->AddLocalRotation(FRotator(RotationValue, 0.0f, 0.0f).Quaternion());
+		
+		//CameraBoom->AddWorldRotation(FRotator(RotationValue, 0.0f, 0.0f).Quaternion());
 	}
 }
 
@@ -227,22 +229,26 @@ void ASpectator_Controller::ServerChangePlayer_Implementation()
 						if (CurrentTeamIndex == TeammateStates.Num() - 1)
 						{
 							UE_LOG(LogClass, Log, TEXT("last player, team index: %d"),CurrentTeamIndex);
-							/*
+							
 							for (int32 i = 0; i < TeammateStates.Num(); ++i)
 							{
 								if (i != CurrentTeamIndex)
 								{
-									if (TeammateStates[i]->MyCharacter->GetCurrentState() != EPlayerState::EPlayerDead)
+									if (TeammateStates[i]->MyCharacter != NULL)
 									{
-										//FollowedCharacter = TeammateStates[i]->MyCharacter;
-										//SetFollowedCharacter(TeammateStates[i]->MyCharacter);
-										UE_LOG(LogClass, Log, TEXT("found player 1"));
-										UE_LOG(LogClass, Log, TEXT("new follow name: %s"), *TeammateStates[i]->MyCharacter->GetName());
-										return;
+										if (TeammateStates[i]->MyCharacter->GetCurrentState() != EPlayerState::EPlayerDead)
+										{
+											//FollowedCharacter = TeammateStates[i]->MyCharacter;
+											//SetFollowedCharacter(TeammateStates[i]->MyCharacter);
+											//UE_LOG(LogClass, Log, TEXT("found player 1"));
+											UE_LOG(LogClass, Log, TEXT("new follow name: %s"), *TeammateStates[i]->MyCharacter->GetName());
+											FollowedCharacter = TeammateStates[i]->MyCharacter;
+											return;
+										}
 									}
 								}
 							}
-							*/
+							
 							
 						}
 						else
@@ -258,6 +264,7 @@ void ASpectator_Controller::ServerChangePlayer_Implementation()
 										if (ps->MyCharacter->GetCurrentState() != EPlayerState::EPlayerDead)
 										{
 											UE_LOG(LogClass, Log, TEXT("new follow2 name: %s"), *TeammateStates[i]->MyCharacter->GetName());
+											FollowedCharacter = TeammateStates[i]->MyCharacter;
 											return;
 										}
 

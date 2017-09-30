@@ -645,6 +645,17 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 									UE_LOG(LogClass, Log, TEXT("Distance: %f"), FVector::Dist(hit.Location, CurrentPrimary->MuzzleLocation->GetComponentLocation()));
 									float ShotDistance = FVector::Dist(hit.Location, CurrentPrimary->MuzzleLocation->GetComponentLocation());
 									float DamagePercent = 0;
+									if (AFPSPlayerState* testps = Cast<AFPSPlayerState>(hitplayer->PlayerState))
+									{
+										if (testps->MyCharacter != NULL)
+										{
+											UE_LOG(LogClass, Log, TEXT("mycharacter: %s"), *testps->MyCharacter->GetName());
+										}
+										else
+										{
+											UE_LOG(LogClass, Log, TEXT("mycharacter is NULL"));
+										}
+									}
 									if (ShotDistance <= CurrentPrimary->PreferredRange)
 									{
 										if (hit.BoneName == FName("head"))
@@ -771,7 +782,7 @@ void AFPSCharacter::BeginPlay()
 	CurrentState = EPlayerState::EPlayerPlaying;
 	if (AFPSPlayerState* myPS = Cast<AFPSPlayerState>(PlayerState))
 	{
-		myPS->SetMyCharacter(this);
+		myPS->BeginPlaySetMyCharacter(this);
 	}
 	switch (GetCurrentState())
 	{

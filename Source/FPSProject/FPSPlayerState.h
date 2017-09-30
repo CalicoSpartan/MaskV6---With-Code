@@ -50,8 +50,12 @@ public:
 		void SetTeam(class ABaseTeam* MyTeam);
 	UFUNCTION(NetMultiCast, Reliable, Category = "Team")
 		void SetRivalTeam(class ABaseTeam* NewRivalTeam);
-	UFUNCTION(NetMulticast, Reliable,WithValidation)
+	UFUNCTION()
 		void SetMyCharacter(class AFPSCharacter* NewCharacter);
+	UFUNCTION()
+		void BeginPlaySetMyCharacter(class AFPSCharacter* NewCharacter);
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerSetMyCharacter(class AFPSCharacter* NewCharacter);
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Team")
 		class ABaseTeam* RivalTeam;

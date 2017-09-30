@@ -19,12 +19,30 @@ void AFPSPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(AFPSPlayerState, MyCharacter);
 }
 
-bool AFPSPlayerState::SetMyCharacter_Validate(class AFPSCharacter* NewCharacter)
+bool AFPSPlayerState::ServerSetMyCharacter_Validate(class AFPSCharacter* NewCharacter)
 {
 	return true;
 }
 
-void AFPSPlayerState::SetMyCharacter_Implementation(class AFPSCharacter* NewCharacter)
+
+void AFPSPlayerState::ServerSetMyCharacter_Implementation(class AFPSCharacter* NewCharacter)
+{
+	SetMyCharacter(NewCharacter);
+}
+
+void AFPSPlayerState::BeginPlaySetMyCharacter(AFPSCharacter * NewCharacter)
+{
+	if (Role == ROLE_Authority)
+	{
+		SetMyCharacter(NewCharacter);
+	}
+	else
+	{
+		ServerSetMyCharacter(NewCharacter);
+	}
+}
+
+void AFPSPlayerState::SetMyCharacter(class AFPSCharacter* NewCharacter)
 {
 	MyCharacter = NewCharacter;
 	UE_LOG(LogClass, Log, TEXT("Set MyCharacter to: %s"), *NewCharacter->GetName());
@@ -83,3 +101,5 @@ int32 AFPSPlayerState::GetAssists()
 {
 	return Assists;
 }
+
+
