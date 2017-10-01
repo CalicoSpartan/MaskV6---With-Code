@@ -514,7 +514,7 @@ void AFPSGameState::Update()
 				if (team->TeamScore >= GameMode->ScoreToWin)
 				{
 					WinningTeam = team->TeamNumber;
-					WinningMessage = TEXT("%s Won"),*team->TeamName.ToString();
+					WinningMessage = team->TeamName.ToString() + " Won";
 					ClientUpdateWinningTeam(WinningTeam, FName(*WinningMessage));
 					CallHUDGameOver();
 					for (FConstControllerIterator It = World->GetControllerIterator(); It; ++It) {

@@ -13,8 +13,16 @@ void AFPSPlayerController::OnKilled()
 		followedcharacter = mycharacter;
 	}
 	UnPossess();
+	float RespawnDelay = 2.0f;
+	if (Role == ROLE_Authority)
+	{
+		if (AFPSProjectGameModeBase* gameMode = Cast<AFPSProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
+		{
+			RespawnDelay = gameMode->RespawnTimer;
+		}
+	}
 	
-	GetWorldTimerManager().SetTimer(TimerHandle_Respawn, this, &AFPSPlayerController::Respawn, 5.0f);
+	GetWorldTimerManager().SetTimer(TimerHandle_Respawn, this, &AFPSPlayerController::Respawn, RespawnDelay);
 	
 	if (Role == ROLE_Authority)
 	{
@@ -40,6 +48,7 @@ void AFPSPlayerController::OnKilled()
 				SpectatorController->FollowedCharacter = followedcharacter;
 				if (AFPSPlayerState* characterPlayerState = Cast<AFPSPlayerState>(PlayerState))
 				{
+					SpectatorController->PlayerName = FName(*characterPlayerState->UserName);
 					SpectatorController->SetTeammateStates(characterPlayerState->Team->TeamPlayerStates);
 					
 				}

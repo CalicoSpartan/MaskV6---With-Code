@@ -68,6 +68,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 		int32 SafeSpawnDistance;
+	UPROPERTY(EditAnywhere, Category = "Spawning")
+		float RespawnTimer = 5.0f;
 
 
 	virtual void BeginPlay() override;

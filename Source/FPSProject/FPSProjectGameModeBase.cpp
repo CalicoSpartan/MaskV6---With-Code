@@ -562,6 +562,10 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 					AFPSCharacter* Character = Cast<AFPSCharacter>(NewPlayer->GetPawn());
 					if (Character)
 					{
+						if (AFPSPlayerState* charPS = Cast<AFPSPlayerState>(Character->PlayerState))
+						{
+							charPS->SetMyCharacter(Character);
+						}
 						Character->TriggerAddUI();
 						Character->AddTeamColor();
 
@@ -623,18 +627,22 @@ void AFPSProjectGameModeBase::BeginPlay()
 		Team->TeamNumber = i + 1;
 		if (i == 0)
 		{
+			Team->TeamName = FName(TEXT("Blue Team"));
 			Team->TeamColor = FColor::Blue;
 		}
 		if (i == 1)
 		{
+			Team->TeamName = FName(TEXT("Red Team"));
 			Team->TeamColor = FColor::Red;
 		}
 		if (i == 2)
 		{
+			Team->TeamName = FName(TEXT("Green Team"));
 			Team->TeamColor = FColor::Green;
 		}
 		if (i == 3)
 		{
+			Team->TeamName = FName(TEXT("Yellow Team"));
 			Team->TeamColor = FColor::Yellow;
 		}
 		Teams.Add(Team);

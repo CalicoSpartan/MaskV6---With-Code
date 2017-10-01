@@ -147,8 +147,8 @@ void ABaseGrenade::Explode_Implementation()
 				Character->SetHitData(ExplosionForce * damagepercent, NAME_None, dirtoplayer.GetSafeNormal());
 				Character->ServerChangeHealthBy(-MaxDamage * damagepercent);
 				Character->TriggerUpdateUI();
-				UE_LOG(LogClass, Log, TEXT("DistanceToPlayer: %f"), disttoplayer);
-				UE_LOG(LogClass, Log, TEXT("Hit Player: %s"),*Character->GetName());
+				//UE_LOG(LogClass, Log, TEXT("DistanceToPlayer: %f"), disttoplayer);
+				UE_LOG(LogClass, Log, TEXT("Hit Player: %s Damage Delt: %f"),*Character->GetName(),-MaxDamage * damagepercent);
 			}
 		}
 	}

@@ -31,10 +31,10 @@ public:
 		float MaxYaw;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float MinYaw;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float MaxPitch;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		float MinPitch;
+	UPROPERTY(Replicated,EditAnywhere, BlueprintReadWrite)
+		float MaxPitch = 15.0f;
+	UPROPERTY(Replicated,EditAnywhere, BlueprintReadWrite)
+		float MinPitch = -75.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
 		bool AttachedToMesh = false;
 	
@@ -47,11 +47,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
 		TArray<class AFPSPlayerState*> TeammateStates;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
-		int32 CurrentTeamIndex = 0;
+		int32 CurrentTeamIndex = -1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
 		FVector LastKnownPlayerLocation;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FName PlayerName;
+	UPROPERTY(Replicated,EditAnywhere, BlueprintReadWrite)
+		FName PlayerName = "";
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float RotationSpeedMultiplier;
 	UFUNCTION(Server,WithValidation, Reliable)
