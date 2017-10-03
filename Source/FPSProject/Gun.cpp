@@ -43,6 +43,8 @@ void AGun::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProp
 	DOREPLIFETIME(AGun, MaxAmmo);
 }
 
+
+
 bool AGun::IsActive()
 {
 	

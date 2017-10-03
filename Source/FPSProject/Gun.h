@@ -20,6 +20,10 @@ public:
 	AGun();
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 		FName GunName = "UnNamedWeapon";
+	UPROPERTY(EditAnywhere, Category = "Spawning")
+		FVector SpawnLocation;
+	UPROPERTY(EditAnywhere, Category = "Spawning")
+		float SpawnTimer = 60.0f;
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 		bool IsProjectile;
 	UPROPERTY(EditAnywhere, Category = "Weapon")
@@ -125,6 +129,7 @@ public:
 	UFUNCTION()
 		void ClientEndReload();
 
+
 	// the pawn who picked up the pickup
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 		APawn* WeaponInstigator;
@@ -132,6 +137,7 @@ protected:
 
 
 	virtual void BeginPlay() override;
+
 
 	//true when the pickup can be used, false when the pickup is deactivated
 	UPROPERTY(Replicated = OnRep_IsActive)
