@@ -589,6 +589,10 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 		}
 	}
 
+	for (int32 i = 0; i < WeaponSpawns.Num(); ++i)
+	{
+		WeaponSpawns[i]->SpawnWeapon();
+	}
 
 	//TArray<AFPSPlayerController> PlayerControllers;
 	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFPSPlayerController::StaticClass(), PlayerControllers);
@@ -653,8 +657,13 @@ void AFPSProjectGameModeBase::BeginPlay()
 	}
 
 	MyGameState->SetNumberOfPlayers(GetNumPlayers());
+	
+	for (TActorIterator<AWeaponSpawner> WeaponSpawner(GetWorld()); WeaponSpawner; ++WeaponSpawner)
+	{
+		WeaponSpawns.Add(*WeaponSpawner);
+	}
 
-
+	
 
 }
 

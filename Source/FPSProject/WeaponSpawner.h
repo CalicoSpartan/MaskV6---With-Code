@@ -17,13 +17,15 @@ public:
 	AWeaponSpawner();
 
 	UPROPERTY(EditAnywhere, Replicated, Category = "Weapon")
-		AGun* ReferencedWeapon;
+		TSubclassOf<class AGun> ReferencedWeapon;
 	UPROPERTY(EditAnywhere, Replicated, Category = "WeaponStats")
 		int32 TotalAmmo;
 	UPROPERTY(EditAnywhere, Replicated, Category = "WeaponStats")
 		int32 MagazineAmmo;
 	UPROPERTY(EditAnywhere, Replicated, Category = "WeaponSpawning")
 		float RespawnTimerDelay = 120.0f;
+	UPROPERTY(EditAnywhere, Replicated, Category = "WeaponSpawning")
+		bool SpawnOnStart = true;
 
 	UPROPERTY(EditAnywhere, Replicated, Category = "Transform")
 		FRotator WeaponRotation = FRotator::ZeroRotator;

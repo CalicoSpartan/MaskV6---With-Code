@@ -21,6 +21,7 @@ void AWeaponSpawner::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(AWeaponSpawner, RespawnTimerDelay);
 	DOREPLIFETIME(AWeaponSpawner, WeaponRotation);
 	DOREPLIFETIME(AWeaponSpawner, RespawnTimer);
+	DOREPLIFETIME(AWeaponSpawner, SpawnOnStart);
 
 }
 
@@ -73,9 +74,10 @@ void AWeaponSpawner::SpawnWeapon()
 {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	
 	if (ReferencedWeapon)
 	{
-		AGun* MyWeapon = GetWorld()->SpawnActor<AGun>(ReferencedWeapon->GetClass(), GetActorLocation(), WeaponRotation, SpawnParams);
+		AGun* MyWeapon = GetWorld()->SpawnActor<AGun>(ReferencedWeapon, GetActorLocation(), WeaponRotation, SpawnParams);
 		if (TotalAmmo && TotalAmmo <= MyWeapon->MaxAmmo)
 		{
 			MyWeapon->TotalAmmo = TotalAmmo;

@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "FPSGameState.h"
 #include "BaseTeam.h"
+#include "WeaponSpawner.h"
 #include "FPSPlayerState.h"
 #include "FPSPlayerStart.h"
 #include "FPSPlayerController.h"
@@ -28,6 +29,8 @@ public:
 		TArray<class AFPSPlayerController*> Team2PlayerControllers;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Teams")
 		TArray<ABaseTeam*> Teams;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponSpawning")
+		TArray<class AWeaponSpawner*> WeaponSpawns;
 
 	//NEW STUFF////////////////////////////////////////////////////////////////////////////////
 	virtual void StartNewPlayer(APlayerController* NewPlayer);
