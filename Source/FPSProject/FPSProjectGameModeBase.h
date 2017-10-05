@@ -39,10 +39,14 @@ public:
 	virtual void StartNewPlayerClient(APlayerController* NewPlayer);
 
 	virtual void RespawnPlayer(APlayerController* NewPlayer);
+	UPROPERTY(BlueprintReadOnly,EditAnywhere)
+	FTimerHandle GameCountdownTimer;
 
+	UPROPERTY(BlueprintReadOnly,EditAnywhere, Category = "Rules")
+		float GameCountdownDelay = 10.0f;
 
-
-
+	UFUNCTION()
+		void AllowPlay();
 
 
 	void PostLogin(APlayerController * NewPlayer) override;

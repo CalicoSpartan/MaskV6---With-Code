@@ -44,7 +44,8 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 		FString LastKiller;
 
-
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
+		float GameStartCountdownTimer = 20.0f;
 
 	UFUNCTION(BlueprintCallable)
 		void SetNewKillFeedMessage(FString Message);

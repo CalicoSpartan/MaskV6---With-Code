@@ -548,7 +548,7 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 				
 
 				
-					HandleNewState(EGamePlayState::EPlaying);
+					
 					NewPlayer->GetPawn()->Destroy();
 					int32 StartSpotIndex = FMath::RandRange(0, PreferredStarts.Num() - 1);
 					NewPlayer->SetPawn(SpawnDefaultPawnFor(NewPlayer, PreferredStarts[StartSpotIndex]));
@@ -581,6 +581,7 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 							PC->ServerSetPlayerTeamClient(0);
 						}
 					}
+					HandleNewState(EGamePlayState::EPlaying);
 					
 
 				}
@@ -667,6 +668,18 @@ void AFPSProjectGameModeBase::BeginPlay()
 
 }
 
+void AFPSProjectGameModeBase::AllowPlay()
+{
+	AFPSGameState* MyGameState = Cast<AFPSGameState>(GameState);
+	check(MyGameState);
+	MyGameState->SetCurrentState(EGamePlayState::EPlaying);
+	for (TActorIterator<AFPSCharacter> Character(GetWorld()); Character; ++Character)
+	{
+		Character->SetCurrentState(EPlayerState::EPlayerPlaying);
+	}
+	UE_LOG(LogClass, Log, TEXT("Allow Play Now"));
+	GameCountdownTimer.Invalidate();
+}
 
 
 void AFPSProjectGameModeBase::HandleNewState(enum EGamePlayState NewState)
@@ -679,7 +692,7 @@ void AFPSProjectGameModeBase::HandleNewState(enum EGamePlayState NewState)
 	if (NewState != MyGameState->GetCurrentState())
 	{
 		//update the state, so clients know about the transition
-		MyGameState->SetCurrentState(NewState);
+		
 
 		switch (NewState)
 		{
@@ -687,11 +700,15 @@ void AFPSProjectGameModeBase::HandleNewState(enum EGamePlayState NewState)
 
 			break;
 		case EGamePlayState::EPlaying:
-
-
+			GetWorld()->GetTimerManager().SetTimer(GameCountdownTimer, this, &AFPSProjectGameModeBase::AllowPlay, GameCountdownDelay, false);
+			
+			for (TActorIterator<AFPSCharacter> Character(GetWorld()); Character; ++Character)
+			{
+				Character->SetCurrentState(EPlayerState::EPlayerWaiting);
+			}
 			break;
 		case EGamePlayState::EGameOver:
-
+			MyGameState->SetCurrentState(NewState);
 
 			break;
 		default:
@@ -701,5 +718,6 @@ void AFPSProjectGameModeBase::HandleNewState(enum EGamePlayState NewState)
 	}
 
 }
+
 
 

@@ -193,7 +193,17 @@ EPlayerState AFPSCharacter::GetCurrentState() const
 void AFPSCharacter::SetCurrentState(EPlayerState NewState)
 {
 	if (Role == ROLE_Authority) {
+		UE_LOG(LogClass, Log, TEXT("state changed"));
 		CurrentState = NewState;
+		if (NewState == EPlayerState::EPlayerWaiting)
+		{
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+		}
+		else if (NewState == EPlayerState::EPlayerPlaying)
+		{
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		}
+
 	}
 }
 /*
@@ -1465,8 +1475,15 @@ void AFPSCharacter::Tick(float DeltaTime)
 	}
 	if (CurrentState == EPlayerState::EPlayerWaiting)
 	{
-		GetCharacterMovement()->DisableMovement();
+
+		//GetCharacterMovement()->SetMovementModeEMovementMode
 	}
+	else if (CurrentState = EPlayerState::EPlayerPlaying)
+	{
+
+		
+	}
+
 	if (Role == ROLE_AutonomousProxy)
 	{
 		if (GetController())

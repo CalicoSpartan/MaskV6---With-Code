@@ -573,6 +573,7 @@ void AFPSGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFPSGameState, Team1PlayerControllers);
 	DOREPLIFETIME(AFPSGameState, Team2PlayerOrder);
 	DOREPLIFETIME(AFPSGameState, Team1PlayerOrder);
+	DOREPLIFETIME(AFPSGameState, GameStartCountdownTimer);
 
 	DOREPLIFETIME(AFPSGameState, Team2PlayerObjects);
 	DOREPLIFETIME(AFPSGameState, Team1PlayerObjects);
