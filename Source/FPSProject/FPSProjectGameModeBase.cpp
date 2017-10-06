@@ -592,7 +592,10 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 
 	for (int32 i = 0; i < WeaponSpawns.Num(); ++i)
 	{
-		WeaponSpawns[i]->SpawnWeapon();
+		if (WeaponSpawns[i]->SpawnOnStart == true)
+		{
+			WeaponSpawns[i]->SpawnWeapon();
+		}
 	}
 
 	//TArray<AFPSPlayerController> PlayerControllers;

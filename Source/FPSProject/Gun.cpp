@@ -41,6 +41,7 @@ void AGun::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProp
 	DOREPLIFETIME(AGun, BulletForce);
 	DOREPLIFETIME(AGun, IsReloading);
 	DOREPLIFETIME(AGun, MaxAmmo);
+	DOREPLIFETIME(AGun, MySpawner);
 }
 
 
@@ -219,6 +220,7 @@ void AGun::DroppedBy(APawn * Pawn)
 		ClientOnDroppedBy(Pawn);
 		DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
 		GetStaticMeshComponent()->SetSimulatePhysics(true);
+		
 	}
 }
 void AGun::SecondaryDroppedBy(APawn * Pawn)

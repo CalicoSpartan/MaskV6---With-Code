@@ -51,6 +51,7 @@ void AWeaponSpawner::ServerSetRespawnTimer_Implementation()
 
 void AWeaponSpawner::ClientSetRespawnTimer()
 {
+	UE_LOG(LogClass, Log, TEXT("SetRespawnTimer was called"));
 	if (Role == ROLE_Authority)
 	{
 		SetRespawnTimer();
@@ -78,6 +79,7 @@ void AWeaponSpawner::SpawnWeapon()
 	if (ReferencedWeapon)
 	{
 		AGun* MyWeapon = GetWorld()->SpawnActor<AGun>(ReferencedWeapon, GetActorLocation(), WeaponRotation, SpawnParams);
+		MyWeapon->MySpawner = this;
 		if (TotalAmmo && TotalAmmo <= MyWeapon->MaxAmmo)
 		{
 			MyWeapon->TotalAmmo = TotalAmmo;

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/StaticMeshActor.h"
 #include "FPSCharacter.h"
+#include "WeaponSpawner.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Gun.generated.h"
 
@@ -20,10 +21,8 @@ public:
 	AGun();
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 		FName GunName = "UnNamedWeapon";
-	UPROPERTY(EditAnywhere, Category = "Spawning")
-		FVector SpawnLocation;
-	UPROPERTY(EditAnywhere, Category = "Spawning")
-		float SpawnTimer = 60.0f;
+	UPROPERTY(Replicated, EditAnywhere, Category = "Spawning")
+		class AWeaponSpawner* MySpawner;
 	UPROPERTY(EditAnywhere, Category = "Weapon")
 		bool IsProjectile;
 	UPROPERTY(EditAnywhere, Category = "Weapon")

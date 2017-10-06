@@ -918,32 +918,54 @@ void AFPSCharacter::DeadDropWeapon()
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	if (PrimaryInstance != NULL)
 	{
-		
-		AGun* DroppedPrimary = GetWorld()->SpawnActor<AGun>(PrimaryInstance->GetClass(), MyDeathLocation, FRotator::ZeroRotator,SpawnParams);
-		if (Role == ROLE_Authority)
+		if (PrimaryInstance->TotalAmmo <= 0 && PrimaryInstance->AmmoLeftInMag <= 0)
 		{
-			UE_LOG(LogClass, Log, TEXT("Changing ammo from server"));
-			DroppedPrimary->ChangeAmmo(DroppedPrimary->MaxAmmo - (PrimaryInstance->MaxAmmo - PrimaryInstance->TotalAmmo), DroppedPrimary->MagazineSize - (PrimaryInstance->MagazineSize - PrimaryInstance->AmmoLeftInMag));
+			if (PrimaryInstance->MySpawner)
+			{
+				PrimaryInstance->MySpawner->ClientSetRespawnTimer();
+			}
+			else
+			{
+				UE_LOG(LogClass, Log, TEXT("SpawnerDoesent exist"));
+			}
 		}
 		else
 		{
-			UE_LOG(LogClass, Log, TEXT("Changing ammo from client"));
-			DroppedPrimary->ServerChangeAmmo(DroppedPrimary->MaxAmmo - (PrimaryInstance->MaxAmmo - PrimaryInstance->TotalAmmo), DroppedPrimary->MagazineSize - (PrimaryInstance->MagazineSize - PrimaryInstance->AmmoLeftInMag));
+			AGun* DroppedPrimary = GetWorld()->SpawnActor<AGun>(PrimaryInstance->GetClass(), MyDeathLocation, FRotator::ZeroRotator, SpawnParams);
+			if (Role == ROLE_Authority)
+			{
+				UE_LOG(LogClass, Log, TEXT("Changing ammo from server"));
+				DroppedPrimary->ChangeAmmo(DroppedPrimary->MaxAmmo - (PrimaryInstance->MaxAmmo - PrimaryInstance->TotalAmmo), DroppedPrimary->MagazineSize - (PrimaryInstance->MagazineSize - PrimaryInstance->AmmoLeftInMag));
+			}
+			else
+			{
+				UE_LOG(LogClass, Log, TEXT("Changing ammo from client"));
+				DroppedPrimary->ServerChangeAmmo(DroppedPrimary->MaxAmmo - (PrimaryInstance->MaxAmmo - PrimaryInstance->TotalAmmo), DroppedPrimary->MagazineSize - (PrimaryInstance->MagazineSize - PrimaryInstance->AmmoLeftInMag));
+			}
 		}
 	}
 	if (SecondaryInstance != NULL)
 	{
-
-		AGun* DroppedSecondary = GetWorld()->SpawnActor<AGun>(SecondaryInstance->GetClass(), MyDeathLocation, FRotator::ZeroRotator,SpawnParams);
-		if (Role == ROLE_Authority)
+		if (SecondaryInstance->TotalAmmo <= 0 && PrimaryInstance->AmmoLeftInMag <= 0)
 		{
-			UE_LOG(LogClass, Log, TEXT("Changing ammo from server"));
-			DroppedSecondary->ChangeAmmo(DroppedSecondary->MaxAmmo - (SecondaryInstance->MaxAmmo - SecondaryInstance->TotalAmmo), DroppedSecondary->MagazineSize - (SecondaryInstance->MagazineSize - SecondaryInstance->AmmoLeftInMag));
+			if (SecondaryInstance->MySpawner)
+			{
+				SecondaryInstance->MySpawner->ClientSetRespawnTimer();
+			}
 		}
 		else
 		{
-			UE_LOG(LogClass, Log, TEXT("Changing ammo from client"));
-			DroppedSecondary->ServerChangeAmmo(DroppedSecondary->MaxAmmo - (SecondaryInstance->MaxAmmo - SecondaryInstance->TotalAmmo), DroppedSecondary->MagazineSize - (SecondaryInstance->MagazineSize - SecondaryInstance->AmmoLeftInMag));
+			AGun* DroppedSecondary = GetWorld()->SpawnActor<AGun>(SecondaryInstance->GetClass(), MyDeathLocation, FRotator::ZeroRotator, SpawnParams);
+			if (Role == ROLE_Authority)
+			{
+				UE_LOG(LogClass, Log, TEXT("Changing ammo from server"));
+				DroppedSecondary->ChangeAmmo(DroppedSecondary->MaxAmmo - (SecondaryInstance->MaxAmmo - SecondaryInstance->TotalAmmo), DroppedSecondary->MagazineSize - (SecondaryInstance->MagazineSize - SecondaryInstance->AmmoLeftInMag));
+			}
+			else
+			{
+				UE_LOG(LogClass, Log, TEXT("Changing ammo from client"));
+				DroppedSecondary->ServerChangeAmmo(DroppedSecondary->MaxAmmo - (SecondaryInstance->MaxAmmo - SecondaryInstance->TotalAmmo), DroppedSecondary->MagazineSize - (SecondaryInstance->MagazineSize - SecondaryInstance->AmmoLeftInMag));
+			}
 		}
 	}
 
@@ -967,6 +989,7 @@ void AFPSCharacter::DropWeapon()//_Implementation()
 			if (IsDead)
 			{
 				//GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
+				
 				GetWorld()->GetTimerManager().SetTimer(DeadWeaponDropTimer, this, &AFPSCharacter::DeadDropWeapon, DeadWeaponDropDelay, false);
 				for (int32 i = 0; i < MyWeapons.Num(); ++i)
 				{
