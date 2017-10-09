@@ -17,6 +17,7 @@ void AFPSPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(AFPSPlayerState, Assists);
 	DOREPLIFETIME(AFPSPlayerState, Team);
 	DOREPLIFETIME(AFPSPlayerState, MyCharacter);
+	DOREPLIFETIME(AFPSPlayerState, PlayerTag);
 }
 
 bool AFPSPlayerState::ServerSetMyCharacter_Validate(class AFPSCharacter* NewCharacter)
@@ -59,9 +60,14 @@ void AFPSPlayerState::SetRivalTeam_Implementation(class ABaseTeam* NewRivalTeam)
 
 void AFPSPlayerState::SetUserNameMultiCast_Implementation(FName NewName)
 {
-	//UserName = "PENIS";
 	UserName = NewName.ToString();
 }
+
+void AFPSPlayerState::SetPlayerTagMultiCast_Implementation(FName NewTag)
+{
+	PlayerTag = NewTag.ToString();
+}
+
 void AFPSPlayerState::SetScoreMultiCast_Implementation(int32 delta)
 {
 	MyScore += delta;

@@ -23,7 +23,10 @@ public:
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Stats")
 		int32 Betrayals = 0;
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Team")
-		FString UserName = "POOOOOOP";
+		FString UserName = "000";
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Team")
+		FString PlayerTag = "000";
+
 	//required network scaffolding
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	UFUNCTION(BlueprintCallable, Category = "Stats")
@@ -40,6 +43,8 @@ public:
 		void SetScoreMultiCast(int32 delta);
 	UFUNCTION(NetMultiCast, Reliable, Category = "Stats")
 		void SetUserNameMultiCast(FName NewName);
+	UFUNCTION(NetMultiCast, Reliable, Category = "Stats")
+		void SetPlayerTagMultiCast(FName NewTag);
 	UFUNCTION(NetMultiCast, Reliable, Category = "Stats")
 		void SetKillsMultiCast(int32 delta);
 	UFUNCTION(NetMultiCast, Reliable, Category = "Stats")

@@ -535,8 +535,16 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 							{
 								if (AFPSPlayerState* playerstate = Cast<AFPSPlayerState>(teamclass->TeamPlayerStates[playerindex]))
 								{
-									FString newName = "Team" + FString::FromInt(teamclass->TeamNumber) + "Player[" + FString::FromInt(playerindex) + "]";
-									playerstate->SetUserNameMultiCast(FName(*newName));
+									if (playerstate->UserName == "000")
+									{
+										FString newName = "Team" + FString::FromInt(teamclass->TeamNumber) + "Player[" + FString::FromInt(playerindex) + "]";						
+										playerstate->SetUserNameMultiCast(FName(*newName));
+									}
+									if (playerstate->PlayerTag == "000")
+									{
+										FString newTag = "T0" + FString::FromInt(playerindex);
+										playerstate->SetPlayerTagMultiCast(FName(*newTag));
+									}
 									UE_LOG(LogClass, Log, TEXT("SetPlayerName"));
 								}
 							}
