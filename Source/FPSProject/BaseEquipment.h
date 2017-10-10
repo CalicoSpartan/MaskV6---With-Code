@@ -4,7 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Engine/StaticMeshActor.h"
+#include "FPSCharacter.h"
 #include "BaseEquipment.generated.h"
+
+UENUM(BlueprintType)
+enum EEquipmentType
+{
+	EWearable,
+	EThrowable,
+	EPlantable
+
+};
+
 
 /**
  * 
@@ -16,6 +27,34 @@ class FPSPROJECT_API ABaseEquipment : public AStaticMeshActor
 	
 public:
 	ABaseEquipment();
+
+	UPROPERTY(Replicated,EditAnywhere,Category = "Type")
+		TEnumAsByte<enum EEquipmentType> MyType;
+	UPROPERTY(Replicated,EditAnywhere, Category = "Lifetime")
+		bool bIsActive = false;
+	UPROPERTY(EditAnywhere,Category = "Lifetime")
+		float LifeTimeDelay = 20.0f;
+	UPROPERTY(Replicated,EditAnywhere, Category = "Lifetime")
+		FTimerHandle LifeTimeTimer;
+
+private:
+	UPROPERTY(Replicated,EditAnywhere, Category = "Player")
+		class AFPSCharacter* AttachedPawn;
+
+public:
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	void DestroySelf();
 	
-	
+	UFUNCTION(Category = "Interaction")
+		virtual void Thrown(FVector ThrowDirection, float ThrowStrength);
+
+	UFUNCTION(Category = "Interaction")
+		virtual void Planted(FVector Location = FVector::ZeroVector);
+	UFUNCTION(Category = "Interaction")
+		virtual void Applied();
+
+
+	UFUNCTION(BlueprintAuthorityOnly, Category = "Interaction")
+		virtual void PickedUpBy(APawn* Pawn);
 };
