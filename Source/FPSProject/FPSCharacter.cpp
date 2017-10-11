@@ -1166,6 +1166,14 @@ void AFPSCharacter::PickupEquipment()
 						Grenade->Destroy();
 					}
 				}
+				if (ABaseEquipment* const Equipment = Cast<ABaseEquipment>(PossibleEquipment[i]))
+				{
+					if (Equipment->bIsActive == false)
+					{
+						Equipment->PickedUpBy(this);
+						Equipment->bIsActive = true;
+					}
+				}
 			}
 			if (!FoundPossibleWeapon)
 			{
@@ -1617,4 +1625,6 @@ void AFPSCharacter::StopJump()
 {
 	bPressedJump = false;
 }
+
+
 

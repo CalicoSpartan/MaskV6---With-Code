@@ -396,6 +396,7 @@ void AFPSGameState::Update()
 
 
 						CallHUDUpdate();
+						Player->OnDeathRemoveUI();
 						Player->IsDead = true;
 						//Player->DropWeapon();
 						//Player->DropEquipment();

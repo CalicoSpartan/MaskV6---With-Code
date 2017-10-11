@@ -36,10 +36,11 @@ public:
 		float LifeTimeDelay = 20.0f;
 	UPROPERTY(Replicated,EditAnywhere, Category = "Lifetime")
 		FTimerHandle LifeTimeTimer;
+	UPROPERTY(Replicated, BlueprintReadWrite, EditAnywhere, Category = "Player")
+		class AFPSCharacter* AttachedPawn;
 
 private:
-	UPROPERTY(Replicated,EditAnywhere, Category = "Player")
-		class AFPSCharacter* AttachedPawn;
+
 
 public:
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

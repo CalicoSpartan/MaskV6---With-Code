@@ -8,6 +8,7 @@
 #include "BaseGrenade.h"
 #include "FragGrenade.h"
 #include "FPSPlayerState.h"
+#include "BaseEquipment.h"
 #include "Runtime/Engine/Public/CollisionQueryParams.h"
 #include "FPSGameState.h"
 #include "Gun.h"
@@ -295,6 +296,9 @@ public:
 
 	UPROPERTY(Replicated, EditDefaultsOnly,BlueprintReadOnly, Category = "Weapon")
 		class AGun* CurrentPrimary;
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnDeathRemoveUI();
 	//TSubclassOf<AGun> CurrentPrimary;
 
 	UFUNCTION(Server,WithValidation, Reliable)
