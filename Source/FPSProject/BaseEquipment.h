@@ -30,7 +30,7 @@ public:
 
 	UPROPERTY(Replicated,EditAnywhere,Category = "Type")
 		TEnumAsByte<enum EEquipmentType> MyType;
-	UPROPERTY(Replicated,EditAnywhere, Category = "Lifetime")
+	UPROPERTY(Replicated,EditAnywhere,BlueprintReadWrite, Category = "Lifetime")
 		bool bIsActive = false;
 	UPROPERTY(EditAnywhere,Category = "Lifetime")
 		float LifeTimeDelay = 20.0f;

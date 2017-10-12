@@ -19,6 +19,9 @@ public:
 
 	UPROPERTY(Replicated, EditAnywhere,BlueprintReadWrite)
 		float EffectTransitionSpeed = 3.0f;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite)
+		float PlayerMinInvisSpeed = 3.0f;
+
 
 public:
 

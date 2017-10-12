@@ -12,7 +12,13 @@ AEQ_Invis::AEQ_Invis()
 
 void AEQ_Invis::Applied()
 {
-
+	GetStaticMeshComponent()->bGenerateOverlapEvents = false;
+	GetStaticMeshComponent()->SetSimulatePhysics(false);
+	GetStaticMeshComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	if (AttachedPawn != NULL)
+	{
+		AttachToComponent(AttachedPawn->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName(TEXT("AbilityLocation1")));
+	}
 	BP_Applied();
 
 }
@@ -22,6 +28,7 @@ void AEQ_Invis::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AEQ_Invis, EffectTransitionSpeed);
+	DOREPLIFETIME(AEQ_Invis, PlayerMinInvisSpeed);
 }
 
 void AEQ_Invis::PickedUpBy(APawn* Pawn)

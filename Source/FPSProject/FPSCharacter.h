@@ -78,7 +78,7 @@ public:
 		TSubclassOf<ABaseGrenade> CurrentGrenade;
 	UPROPERTY(EditAnywhere)
 		class AGun* PrimaryInstance;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 		class AGun* SecondaryInstance;
 		//TSubobjectPtr<class AGun> SecondaryInstance;
 
@@ -304,7 +304,7 @@ public:
 	UFUNCTION(Server,WithValidation, Reliable)
 		void ServerReload();
 	// First-person mesh (arms), visible only to the owning player.
-	UPROPERTY(Replicated, VisibleDefaultsOnly, Category = Mesh)
+	UPROPERTY(Replicated, VisibleDefaultsOnly,BlueprintReadWrite, Category = Mesh)
 		USkeletalMeshComponent* FPSMesh;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
