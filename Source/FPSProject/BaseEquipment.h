@@ -32,9 +32,9 @@ public:
 		TEnumAsByte<enum EEquipmentType> MyType;
 	UPROPERTY(Replicated,EditAnywhere,BlueprintReadWrite, Category = "Lifetime")
 		bool bIsActive = false;
-	UPROPERTY(EditAnywhere,Category = "Lifetime")
+	UPROPERTY(Replicated,EditAnywhere,BlueprintReadWrite,Category = "Lifetime")
 		float LifeTimeDelay = 20.0f;
-	UPROPERTY(Replicated,EditAnywhere, Category = "Lifetime")
+	UPROPERTY(Replicated,EditAnywhere, BlueprintReadWrite,Category = "Lifetime")
 		FTimerHandle LifeTimeTimer;
 	UPROPERTY(Replicated, BlueprintReadWrite, EditAnywhere, Category = "Player")
 		class AFPSCharacter* AttachedPawn;
@@ -45,7 +45,7 @@ private:
 public:
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	void DestroySelf();
+	virtual void DestroySelf();
 	
 	UFUNCTION(Category = "Interaction")
 		virtual void Thrown(FVector ThrowDirection, float ThrowStrength);

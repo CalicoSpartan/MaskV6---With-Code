@@ -42,6 +42,7 @@ void AGun::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProp
 	DOREPLIFETIME(AGun, IsReloading);
 	DOREPLIFETIME(AGun, MaxAmmo);
 	DOREPLIFETIME(AGun, MySpawner);
+	DOREPLIFETIME(AGun, BaseMaterial);
 }
 
 
@@ -63,6 +64,9 @@ bool AGun::EndReload_Validate()
 void AGun::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	
+
 	
 }
 void AGun::ChangeAmmo(int32 Ammo, int32 Mag)

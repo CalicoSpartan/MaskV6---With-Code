@@ -29,6 +29,8 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void BP_Applied();
+	UFUNCTION(BlueprintImplementableEvent)
+		void BP_Destroyed();
 
 	UFUNCTION(Category = "Interaction")
 		void Applied();
@@ -37,5 +39,5 @@ public:
 	UFUNCTION(BlueprintAuthorityOnly, Category = "Interaction")
 		void PickedUpBy(APawn* Pawn);
 	
-	
+	void DestroySelf();
 };

@@ -20,7 +20,7 @@ void AEQ_Invis::Applied()
 		AttachToComponent(AttachedPawn->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName(TEXT("AbilityLocation1")));
 	}
 	BP_Applied();
-
+	GetWorld()->GetTimerManager().SetTimer(LifeTimeTimer, this, &AEQ_Invis::DestroySelf, LifeTimeDelay, false);
 }
 
 
@@ -36,4 +36,16 @@ void AEQ_Invis::PickedUpBy(APawn* Pawn)
 	Super::PickedUpBy(Pawn);
 	Applied();
 
+}
+void AEQ_Invis::DestroySelf()
+{
+	if (Role == ROLE_Authority)
+	{
+
+		if (AttachedPawn->MyEquipment.Find(this) != -1)
+		{
+			AttachedPawn->MyEquipment.RemoveAt(AttachedPawn->MyEquipment.Find(this));
+		}
+		BP_Destroyed();
+	}
 }

@@ -1170,6 +1170,7 @@ void AFPSCharacter::PickupEquipment()
 				{
 					if (Equipment->bIsActive == false)
 					{
+						MyEquipment.Add(Equipment);
 						Equipment->PickedUpBy(this);
 						Equipment->bIsActive = true;
 					}
@@ -1338,6 +1339,7 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFPSCharacter, ShotLocation_MinX);
 	DOREPLIFETIME(AFPSCharacter, ShotLocation_MaxY);
 	DOREPLIFETIME(AFPSCharacter, ShotLocation_MinY);
+	DOREPLIFETIME(AFPSCharacter, MyEquipment);
 	
 }
 

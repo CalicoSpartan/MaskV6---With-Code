@@ -128,6 +128,9 @@ public:
 	UFUNCTION()
 		void ClientEndReload();
 
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Mesh")
+		UMaterial* BaseMaterial;
+
 
 	// the pawn who picked up the pickup
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")

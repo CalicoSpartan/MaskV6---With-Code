@@ -7,6 +7,7 @@
 ABaseEquipment::ABaseEquipment()
 {
 	bReplicates = true;
+	bReplicateMovement = true;
 	MyType = EEquipmentType::EWearable;
 
 }
@@ -18,6 +19,8 @@ void ABaseEquipment::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(ABaseEquipment, MyType);
 	DOREPLIFETIME(ABaseEquipment, bIsActive);
 	DOREPLIFETIME(ABaseEquipment, LifeTimeTimer);
+	DOREPLIFETIME(ABaseEquipment, LifeTimeDelay);
+	
 }
 
 void ABaseEquipment::DestroySelf()

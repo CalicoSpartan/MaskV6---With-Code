@@ -41,6 +41,8 @@ public:
 
 	UPROPERTY(Replicated,EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 		TArray<class AGun*> MyWeapons;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+		TArray<class ABaseEquipment*> MyEquipment;
 	UPROPERTY(Replicated,EditAnywhere, BlueprintReadOnly)
 		FString PickupWeaponText;
 	UPROPERTY(EditAnywhere, Category = "Weapon")
@@ -123,6 +125,8 @@ public:
 		float DefaultFOV;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category = "Weapon")
 		int32 MaxNumberOfWeapons = 2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+		int32 MaxNumberOfEquipment = 1;
 
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
