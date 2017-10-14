@@ -621,113 +621,13 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 				QueryParams.AddIgnoredActor(this);
 				if (CurrentPrimary->AmmoLeftInMag > 0 && IsFiring == false && CurrentPrimary->CanFire == true) {
 					AddRecoil();
-
-					UE_LOG(LogClass, Log, TEXT("Max Spread: %f"), CurrentPrimary->MaxSpread);
-					UE_LOG(LogClass, Log, TEXT("Accuracy value: %f"), AccuracySpreadValue);
-					if (CurrentPrimary->IsProjectile == false) {
-						if (CurrentPrimary->IsAutomatic == true)
-						{
-							GetWorld()->GetTimerManager().SetTimer(WeaponFireRateTimer, this, &AFPSCharacter::FireAgain, CurrentPrimary->FireRate, false);
-						}
-
-						FVector BulletDestination;
-						FVector TestBulletDestination = FVector(FPSCameraComponent->GetComponentLocation() + (FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range));
-						/*
-						if (World->LineTraceSingleByChannel(testhit,FPSCameraComponent->GetComponentLocation(), FPSCameraComponent->GetComponentLocation() + (FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range * AccuracyChange), ECollisionChannel::ECC_Visibility, QueryParams))
-						{
-						BulletDestination = testhit.Location;
-						}
-						else
-						{
-						BulletDestination = FPSCameraComponent->GetComponentLocation() + (FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range * AccuracyChange);
-						}
-						*/
-
-						if (ShotStartLocation != FVector::ZeroVector && ShotDirection != FVector::ZeroVector)
-						{
-							
-							
-
-							if (World->LineTraceSingleByChannel(hit, ShotStartLocation, ShotStartLocation + ShotDirection.GetSafeNormal() * CurrentPrimary->Range, ECollisionChannel::ECC_Visibility, QueryParams))
-							{
-								DrawDebugLine(GetWorld(), CurrentPrimary->MuzzleLocation->GetComponentLocation(), hit.Location, FColor::Red, false, 2.0f);
-								if (AFPSCharacter* const hitplayer = Cast<AFPSCharacter>(hit.GetActor())) {
-									UE_LOG(LogClass, Log, TEXT("Distance: %f"), FVector::Dist(hit.Location, CurrentPrimary->MuzzleLocation->GetComponentLocation()));
-									float ShotDistance = FVector::Dist(hit.Location, CurrentPrimary->MuzzleLocation->GetComponentLocation());
-									float DamagePercent = 0;
-									if (AFPSPlayerState* testps = Cast<AFPSPlayerState>(hitplayer->PlayerState))
-									{
-										if (testps->MyCharacter != NULL)
-										{
-											UE_LOG(LogClass, Log, TEXT("mycharacter: %s"), *testps->MyCharacter->GetName());
-										}
-										else
-										{
-											UE_LOG(LogClass, Log, TEXT("mycharacter is NULL"));
-										}
-									}
-									if (ShotDistance <= CurrentPrimary->PreferredRange)
-									{
-										if (hit.BoneName == FName("head"))
-										{
-											UE_LOG(LogClass, Log, TEXT("HEADSHOT"));
-											DamagePercent = CurrentPrimary->HeadShotIncrease;
-										}
-										else
-										{
-											DamagePercent = 1.0f;
-										}
-									}
-									else
-									{
-										float WeaponRangeDifference = CurrentPrimary->Range - CurrentPrimary->PreferredRange;
-										float ShotRangeDifference = CurrentPrimary->Range - ShotDistance;
-										float OppositePercentToZeroDamage = ShotRangeDifference / WeaponRangeDifference;
-										if (hit.BoneName == FName("head"))
-										{
-											UE_LOG(LogClass, Log, TEXT("HEADSHOT"));
-											DamagePercent = roundf(OppositePercentToZeroDamage * CurrentPrimary->HeadShotIncrease * 100) / 100;
-										}
-										else
-										{
-											DamagePercent = roundf(OppositePercentToZeroDamage * 100) / 100;
-
-										}
-									}
-									UE_LOG(LogClass, Log, TEXT("DamagePercent: %f"), DamagePercent);
-									hitplayer->Shooter = this;
-									FVector BulletTrailDir = FVector(hit.Location - hit.TraceStart).GetSafeNormal();
-									hitplayer->SetHitData(CurrentPrimary->BulletForce, hit.BoneName, BulletTrailDir);
-									hitplayer->ServerChangeHealthBy(-CurrentPrimary->BulletDamage * DamagePercent);
-									hitplayer->TriggerUpdateUI();
-									
-									//UE_LOG(LogClass, Log, FString::SanitizeFloat(hitplayer->GetCurrentHealth());
-									//hitplayer->HealthPercentage = hitplayer->GetCurrentHealth() / hitplayer->GetInitialHealth();
-									GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Blue, FString::SanitizeFloat(hitplayer->GetCurrentHealth()));
-									GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Blue, FString::SanitizeFloat(hitplayer->HealthPercentage));
-									//UE_LOG(LogClass, Log, TEXT("%s health is now %s"), *hitplayer->GetName(), FString::SanitizeFloat(hitplayer->GetCurrentHealth()));
-								}
-
-							}
-							else
-							{
-								DrawDebugLine(GetWorld(), CurrentPrimary->MuzzleLocation->GetComponentLocation(), ShotStartLocation + ShotDirection.GetSafeNormal() * CurrentPrimary->Range, FColor::Red, false, 2.0f);
-							}
-							
-						}
-						
-
-
-					}
-					if (Role == ROLE_Authority)
+					CurrentPrimary->Shoot(ShotStartLocation, ShotDirection);
+					if (CurrentPrimary->IsAutomatic == true)
 					{
-						CurrentPrimary->ChangeAmmo(CurrentPrimary->TotalAmmo, CurrentPrimary->AmmoLeftInMag - 1);
+						GetWorld()->GetTimerManager().SetTimer(WeaponFireRateTimer, this, &AFPSCharacter::FireAgain, CurrentPrimary->FireRate, false);
 					}
 					
-					else
-					{
-						UE_LOG(LogClass, Log, TEXT("ServerOnShoot(): Somehow we are a client"));
-					}
+
 					
 					if (IsZoomed == true)
 					{
@@ -751,33 +651,11 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 						
 					}
 
-					if (Left_CHLocation != FVector::ZeroVector && Right_CHLocation != FVector::ZeroVector && Top_CHLocation != FVector::ZeroVector && Bottom_CHLocation != FVector::ZeroVector)
-					{
-						/*
-						DrawDebugLine(GetWorld(), Left_CHLocation, Left_CHLocation + FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range, FColor::Red, true);
-						DrawDebugLine(GetWorld(), Right_CHLocation, Right_CHLocation + FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range, FColor::Red, true);
-						DrawDebugLine(GetWorld(), Top_CHLocation, Top_CHLocation + FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range, FColor::Red, true);
-						DrawDebugLine(GetWorld(), Bottom_CHLocation, Bottom_CHLocation + FPSCameraComponent->GetForwardVector() * CurrentPrimary->Range, FColor::Red, true);
-						*/
 
-
-						if (Left_CHDirection != FVector::ZeroVector && Right_CHDirection != FVector::ZeroVector && Top_CHDirection != FVector::ZeroVector && Bottom_CHDirection != FVector::ZeroVector)
-						{
-							/*
-							DrawDebugLine(GetWorld(), Left_CHLocation, Left_CHLocation + Left_CHDirection.GetSafeNormal() * CurrentPrimary->Range, FColor::Red, true);
-							DrawDebugLine(GetWorld(), Right_CHLocation, Right_CHLocation + Right_CHDirection.GetSafeNormal() * CurrentPrimary->Range, FColor::Red, true);
-							DrawDebugLine(GetWorld(), Top_CHLocation, Top_CHLocation + Top_CHDirection.GetSafeNormal() * CurrentPrimary->Range, FColor::Red, true);
-							DrawDebugLine(GetWorld(), Bottom_CHLocation, Bottom_CHLocation + Bottom_CHDirection.GetSafeNormal() * CurrentPrimary->Range, FColor::Red, true);
-							*/
-						}
-					}
 
 
 				}
-				if (CurrentPrimary->AmmoLeftInMag <= 0 && CurrentPrimary->TotalAmmo > 0)
-				{
-					ServerReload();
-				}
+
 			}
 		}
 	}
@@ -813,8 +691,7 @@ void AFPSCharacter::BeginPlay()
 	}
 	if (GEngine)
 	{
-		// Put up a debug message for five seconds. The -1 "Key" value (first argument) indicates that we will never need to update or refresh this message.
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("We are using FPSCharacter."));
+
 	}
 	GetWorld()->GetTimerManager().SetTimer(UpdateTimer, this, &AFPSCharacter::Update, UpdateDelay, true);
 	bCanSwitchWeapon = true;
@@ -861,6 +738,7 @@ void AFPSCharacter::ServerSwitchWeapon_Implementation()
 							if (AGun* SecondaryGun = Cast<AGun>(MyWeapons[PrimaryIndex + 1]))
 							{
 								CurrentPrimary->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+								GetWorld()->GetTimerManager().ClearTimer(CurrentPrimary->ReloadTimer);
 								CurrentPrimary->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("WeaponSocket1")));
 								SecondaryInstance = CurrentPrimary;
 								//this->AttachRootComponentTo(AttachedPlayer->FPSMesh, FName(TEXT("WeaponLocation")),EAttachLocation::SnapToTarget);

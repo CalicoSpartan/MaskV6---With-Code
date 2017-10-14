@@ -47,6 +47,64 @@ void AGun::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProp
 
 
 
+void AGun::Shoot(FVector ShotStart, FVector ShotDirection)
+{
+	if (Role == ROLE_Authority)
+	{
+		if (AmmoLeftInMag > 0 && CanFire == true && WeaponInstigator != NULL)
+		{
+			FCollisionQueryParams QueryParams;
+			QueryParams.AddIgnoredActor(WeaponInstigator);
+			UE_LOG(LogClass, Log, TEXT("fired weapon"));
+			
+			float ShotDistance;
+			float DamagePercent;
+			if (GetWorld()->LineTraceSingleByChannel(shotData, ShotStart, ShotStart + ShotDirection.GetSafeNormal() * Range, ECollisionChannel::ECC_Visibility, QueryParams))
+			{
+				if (AFPSCharacter* const hitCharacter = Cast<AFPSCharacter>(shotData.GetActor()))
+				{
+					ShotDistance = FVector::Dist(MuzzleLocation->GetComponentLocation(), shotData.Location);
+					if (shotData.BoneName == FName("head"))
+					{
+						UE_LOG(LogClass, Log, TEXT("HEADSHOT"));
+						DamagePercent = HeadShotIncrease;
+					}
+					else
+					{
+						DamagePercent = 1.0f;
+					}
+					if (ShotDistance > PreferredRange)
+					{
+						/*
+						float WeaponRangeDifference = Range - PreferredRange;
+						float ShotRangeDifference = Range - ShotDistance;
+						float OppositePercentToZeroDamage = ShotRangeDifference / WeaponRangeDifference;
+						if (shotData.BoneName == FName("head"))
+						{
+							UE_LOG(LogClass, Log, TEXT("HEADSHOT"));
+							DamagePercent = roundf(OppositePercentToZeroDamage * HeadShotIncrease * 100) / 100;
+						}
+						else
+						{
+							DamagePercent = roundf(OppositePercentToZeroDamage * 100) / 100;
+
+						}
+						*/
+					}
+					hitCharacter->Shooter = WeaponInstigator;
+					FVector bulletTrail = (shotData.Location - shotData.TraceStart).GetSafeNormal();
+					hitCharacter->SetHitData(BulletForce, shotData.BoneName, bulletTrail);
+					hitCharacter->ServerChangeHealthBy(-BulletDamage * DamagePercent);
+					hitCharacter->TriggerUpdateUI();
+					GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Blue, FString::SanitizeFloat(hitCharacter->HealthPercentage));
+
+				}
+			}
+			ChangeAmmo(TotalAmmo, AmmoLeftInMag - 1);
+		}
+	}
+}
+
 bool AGun::IsActive()
 {
 	

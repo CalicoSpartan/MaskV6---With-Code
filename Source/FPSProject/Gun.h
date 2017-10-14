@@ -94,6 +94,16 @@ public:
 	//required network scaffolding
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	// returns whether or not the pickup is active
+
+	UFUNCTION(Category = "Shooting")
+		void Shoot(FVector ShotStart,FVector ShotDirection);
+	UPROPERTY(EditAnywhere, Category = "Shooting")
+		FHitResult shotData;
+
+
+
+
+
 	UFUNCTION(BlueprintPure, Category = "Weapon")
 		bool IsActive();
 	UPROPERTY(VisibleAnywhere)
