@@ -122,6 +122,24 @@ int32 AFPSPlayerController::GetDeaths()
 {
 	return Deaths;
 }
+void AFPSPlayerController::TestBeginPlaySetCharacter(AFPSCharacter * newCharacter)
+{
+	if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(PlayerState))
+	{
+		if (Role == ROLE_Authority)
+		{
+			ps->SetMyCharacter(newCharacter);
+		}
+		else if (Role == ROLE_AutonomousProxy)
+		{
+			ps->ServerSetMyCharacter(newCharacter);
+		}
+		else
+		{
+			UE_LOG(LogClass, Log, TEXT("Role Unknown"));
+		}
+	}
+}
 int32 AFPSPlayerController::GetScore()
 {
 	return Score;

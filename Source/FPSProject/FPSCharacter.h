@@ -145,9 +145,9 @@ public:
 		FVector Top_CHDirection;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
 		FVector Bottom_CHDirection;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
 		FVector ShotStartLocation;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
 		FVector ShotDirection;
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "CrossHair")
 		float ShotLocation_MaxX;
@@ -168,10 +168,10 @@ public:
 		float GetCurrentHealth();
 	UFUNCTION(BlueprintImplementableEvent)
 		void GenerateShot();
-	UFUNCTION(BlueprintCallable)
-		void SetShot(FVector Location,FVector Direction);
-	UFUNCTION(Server,WithValidation,Reliable)
-		void SetShotMULTI(FVector Location, FVector Direction);
+	UFUNCTION(BlueprintImplementableEvent)
+		void SetShot();
+	UFUNCTION(Client,WithValidation, Reliable)
+		void SetShotClient();
 	UFUNCTION(Server,WithValidation,Reliable)
 		void GenerateShotMULTI();
 	UFUNCTION(Reliable, NetMultiCast, WithValidation, Category = "Weapon")

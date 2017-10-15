@@ -120,6 +120,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PlayerStats")
 		int32 GetDeaths();
 
+	UFUNCTION()
+		void TestBeginPlaySetCharacter(AFPSCharacter* newCharacter);
+
 private:
 	UPROPERTY(Replicated, VisibleAnywhere, Category = "Team")
 		int32 TeamNumber = 0;

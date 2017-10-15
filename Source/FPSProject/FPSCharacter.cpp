@@ -421,7 +421,7 @@ void AFPSCharacter::OnShoot()
 {
 
 	if (CurrentPrimary != NULL) {
-		SetShotMULTI(ShotStartLocation, ShotDirection);
+		SetShot();
 		ServerOnShoot();
 
 	}
@@ -556,6 +556,7 @@ void AFPSCharacter::ServerOnStopShoot_Implementation()
 
 void AFPSCharacter::FireAgain()
 {
+	SetShot();
 	ServerOnShoot();
 }
 
@@ -578,20 +579,19 @@ bool AFPSCharacter::GenerateShotMULTI_Validate()
 {
 	return true;
 }
-bool AFPSCharacter::SetShotMULTI_Validate(FVector Location, FVector Direction)
+
+bool AFPSCharacter::SetShotClient_Validate()
 {
 	return true;
 }
 
-void AFPSCharacter::SetShotMULTI_Implementation(FVector Location, FVector Direction)
+
+void AFPSCharacter::SetShotClient_Implementation()
 {
-	ShotStartLocation = Location;
-	ShotDirection = Direction;
+	SetShot();
 }
-void AFPSCharacter::SetShot(FVector Location, FVector Direction)
-{
-	SetShotMULTI(Location, Direction);
-}
+
+
 
 void AFPSCharacter::GenerateShotMULTI_Implementation()
 {
@@ -615,11 +615,19 @@ void AFPSCharacter::ServerOnShoot_Implementation()
 				UWorld* World = GetWorld();
 
 				check(World);
-
+				
 				FHitResult hit;
 				FCollisionQueryParams QueryParams;
 				QueryParams.AddIgnoredActor(this);
 				if (CurrentPrimary->AmmoLeftInMag > 0 && IsFiring == false && CurrentPrimary->CanFire == true) {
+					if (ShotStartLocation == FVector::ZeroVector && ShotDirection == FVector::ZeroVector)
+					{
+						UE_LOG(LogClass, Log, TEXT("Zero Vectors"));
+					}
+					else
+					{
+						UE_LOG(LogClass, Log, TEXT("Shot Direction: %s  , Shot Location: %s"),*ShotDirection.ToString(),*ShotStartLocation.ToString());
+					}
 					AddRecoil();
 					CurrentPrimary->Shoot(ShotStartLocation, ShotDirection);
 					if (CurrentPrimary->IsAutomatic == true)
@@ -668,11 +676,18 @@ void AFPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	CurrentState = EPlayerState::EPlayerPlaying;
+
+	if (AFPSPlayerController* pc = Cast<AFPSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+	{
+	//	pc->TestBeginPlaySetCharacter(this);
+	}
+	
 	if (AFPSPlayerState* myPS = Cast<AFPSPlayerState>(PlayerState))
 	{
 		//myPS->BeginPlaySetMyCharacter(NULL);
 		myPS->BeginPlaySetMyCharacter(this);
 	}
+	
 	switch (GetCurrentState())
 	{
 	case EPlayerState::EPlayerWaiting:
@@ -1211,8 +1226,6 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(AFPSCharacter, Left_CHDirection);
 	DOREPLIFETIME(AFPSCharacter, Top_CHDirection);
 	DOREPLIFETIME(AFPSCharacter, Bottom_CHDirection);
-	DOREPLIFETIME(AFPSCharacter, ShotStartLocation);
-	DOREPLIFETIME(AFPSCharacter, ShotDirection);
 	DOREPLIFETIME(AFPSCharacter, ShotLocation_MaxX);
 	DOREPLIFETIME(AFPSCharacter, ShotLocation_MinX);
 	DOREPLIFETIME(AFPSCharacter, ShotLocation_MaxY);
