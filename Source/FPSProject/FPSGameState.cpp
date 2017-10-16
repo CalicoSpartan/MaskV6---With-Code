@@ -227,7 +227,7 @@ void AFPSGameState::Update()
 
 
 
-
+	/*
 
 
 
@@ -314,13 +314,13 @@ void AFPSGameState::Update()
 
 														}
 														*/
-
+														/*
 													}
 
 												}
 											}
 											//}
-
+											
 
 										}
 									}
@@ -533,6 +533,7 @@ void AFPSGameState::Update()
 		}
 
 	}
+	*/
 
 }
 

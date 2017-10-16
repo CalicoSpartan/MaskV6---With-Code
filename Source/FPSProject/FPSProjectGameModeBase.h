@@ -111,7 +111,8 @@ private:
 	//handfle function calls for when the game transitions between states
 	void HandleNewState(enum EGamePlayState NewState);
 
-
+public:
+	virtual void Tick(float DeltaTime) override;
 
 };
 

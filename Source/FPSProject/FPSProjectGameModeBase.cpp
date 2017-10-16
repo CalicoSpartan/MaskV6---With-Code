@@ -49,6 +49,324 @@ AFPSProjectGameModeBase::AFPSProjectGameModeBase()
 	PlayerStateClass = AFPSPlayerState::StaticClass();
 	NumberOfTeams = 2;
 	ScoreToWin = 6;
+	
+}
+
+void AFPSProjectGameModeBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	if (AFPSGameState* gameState = Cast<AFPSGameState>(GameState))
+	{
+
+
+
+
+
+
+		if (gameState->GetCurrentState() == EGamePlayState::EPlaying)
+		{
+
+			//UE_LOG(LogClass, Log, TEXT("KILLED"));
+			for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It) {
+				if (APlayerController* PlayerController = Cast<APlayerController>(*It)) {
+					if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(PlayerController->PlayerState))
+					{
+						if (ps->Betrayals >= 2)
+						{
+							UE_LOG(LogClass, Log, TEXT("Player Should Be Booted"));
+						}
+					}
+					if (AFPSCharacter* Player = Cast<AFPSCharacter>(PlayerController->GetPawn())) {
+						if (Player->GetCurrentHealth() <= 0.0f) {
+							if (Player->Shooter == NULL) {
+								Player->Shooter = Player;
+							}
+							//UE_LOG(LogClass, Log, TEXT("KILLED"));
+
+
+							if (AFPSPlayerController* FPSController = Cast<AFPSPlayerController>(PlayerController))
+							{
+								FPSController->MyPlayerState->SetDeathsMultiCast(1);
+
+								if (AFPSPlayerController* ShooterController = Cast<AFPSPlayerController>(Player->Shooter->Controller))
+								{
+									if (ShooterController->MyPlayerState)
+									{
+										if (ShooterController->MyPlayerState->Team != FPSController->MyPlayerState->Team)
+										{
+
+
+											ShooterController->MyPlayerState->SetKillsMultiCast(1);
+											ShooterController->MyPlayerState->SetScoreMultiCast(10);
+											gameState->LastKiller = ShooterController->MyPlayerState->UserName;
+											gameState->LastKilled = FPSController->MyPlayerState->UserName;
+
+
+											gameState->KillFeedMessage = TEXT("" + gameState->LastKiller + " killed " + gameState->LastKilled);//(TEXT("%s killed %f"), LastKiller, LastKilled);
+
+											gameState->ClientUpdateKillFeedMessage(FName(*gameState->KillFeedMessage));
+
+											//SetNewKillFeedMessage(KillFeedMessage);
+
+											if (AFPSPlayerController* FPSController = Cast<AFPSPlayerController>(Player->Shooter->Controller))
+											{
+												if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(FPSController->PlayerState))
+												{
+
+													if (ps->Team->TeamNumber != 0)
+													{
+														if (AFPSProjectGameModeBase* GameMode = Cast<AFPSProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
+														{
+															ps->Team->ChangeScore(GameMode->PointsPerKill);
+															/*
+															if (ps->Team->TeamNumber == 1)
+															{
+
+															ClientUpdateScore(1, GameMode->PointsPerKill);
+															UpdateScoreBlueprintEvent();
+
+															}
+															if (ps->Team->TeamNumber == 2)
+															{
+															ClientUpdateScore(2, GameMode->PointsPerKill);
+															UpdateScoreBlueprintEvent();
+															UE_LOG(LogClass, Log, TEXT("Team2 Scored"));
+
+															}
+															if (ps->Team->TeamNumber == 3)
+															{
+															ClientUpdateScore(3, GameMode->PointsPerKill);
+															UpdateScoreBlueprintEvent();
+
+															}
+															if (ps->Team->TeamNumber == 4)
+															{
+															ClientUpdateScore(4, GameMode->PointsPerKill);
+															UpdateScoreBlueprintEvent();
+
+															}
+															*/
+
+														}
+
+													}
+												}
+												//}
+
+
+											}
+										}
+										else
+										{
+											gameState->LastKiller = ShooterController->MyPlayerState->UserName;
+											gameState->LastKilled = FPSController->MyPlayerState->UserName;
+
+											gameState->KillFeedMessage = TEXT("" + gameState->LastKiller + " betrayed " + gameState->LastKilled);
+											ShooterController->MyPlayerState->Betrayals += 1;
+											gameState->ClientUpdateKillFeedMessage(FName(*gameState->KillFeedMessage));
+										}
+									}
+
+								}
+							}
+
+
+
+							////////////////////////////////////////////////////////////////////////////////////////////////
+							for (int32 i = 0; i < Teams.Num(); ++i)
+							{
+								if (ABaseTeam* Team = Cast<ABaseTeam>(Teams[i]))
+								{
+									int32 BestScore = -1;
+									TArray<AFPSPlayerState*> CorrectTeamOrder;
+									for (int32 psindex = 0; psindex < Team->TeamPlayerStates.Num(); ++psindex)
+									{
+										if (AFPSPlayerState* playerstate = Cast<AFPSPlayerState>(Team->TeamPlayerStates[psindex]))
+										{
+											if (playerstate->GetScore() > BestScore)
+											{
+												CorrectTeamOrder.Insert(playerstate, 0);
+												BestScore = playerstate->GetScore();
+											}
+											else if (CorrectTeamOrder.Num() > 1)
+											{
+												for (int32 otherpsindex = 0; otherpsindex < CorrectTeamOrder.Num(); ++otherpsindex)
+												{
+													if (AFPSPlayerState* otherps = Cast<AFPSPlayerState>(CorrectTeamOrder[otherpsindex]))
+													{
+														if (CorrectTeamOrder.Contains(playerstate) == false)
+														{
+															if (playerstate->GetScore() > otherps->GetScore())
+															{
+																CorrectTeamOrder.Insert(playerstate, otherpsindex);
+															}
+														}
+													}
+													else
+													{
+														CorrectTeamOrder.Emplace(playerstate);
+													}
+												}
+												if (CorrectTeamOrder.Contains(playerstate) == false)
+												{
+													CorrectTeamOrder.Emplace(playerstate);
+												}
+											}
+											else
+											{
+												if (CorrectTeamOrder.Contains(playerstate) == false)
+												{
+													CorrectTeamOrder.Emplace(playerstate);
+												}
+											}
+										}
+									}
+									Team->UpdateTeamOrder(CorrectTeamOrder);
+								}
+							}
+
+
+
+							gameState->CallHUDUpdate();
+							Player->OnDeathRemoveUI();
+							Player->IsDead = true;
+							//Player->DropWeapon();
+							//Player->DropEquipment();
+							Player->OnPlayerDeath();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						}
+
+					}
+					if (AFPSPlayerController* pc = Cast<AFPSPlayerController>(PlayerController))
+					{
+						pc->UpdateScoreBoardUI();
+					}
+
+				}
+
+
+				if (AFPSPlayerController* FPSController = Cast<AFPSPlayerController>(*It))
+				{
+
+					if (AFPSProjectGameModeBase* GameMode = Cast<AFPSProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
+					{
+						if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(FPSController->PlayerState))
+						{
+
+
+							float ScorePercent = ((double)ps->Team->TeamScore / GameMode->ScoreToWin);
+
+							FPSController->UpdateMyTeamStats(ps->Team->TeamScore, ScorePercent);
+
+
+
+						}
+
+					}
+					AFPSPlayerController* MyRival = NULL;
+					int32 RivalDifference = 100000;
+					for (FConstControllerIterator OtherControllers = GetWorld()->GetControllerIterator(); OtherControllers; ++OtherControllers) {
+						if (AFPSPlayerController* OtherController = Cast<AFPSPlayerController>(*OtherControllers))
+						{
+							if (OtherController != FPSController)
+							{
+								if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(FPSController->PlayerState))
+								{
+									if (AFPSPlayerState* ps2 = Cast<AFPSPlayerState>(OtherController->PlayerState))
+									{
+										if (ps2->Team->TeamNumber != ps->Team->TeamNumber)
+										{
+
+
+											if (ps2->Team->TeamNumber != 0)
+											{
+
+												if (FGenericPlatformMath::Abs(ps2->Team->TeamScore - ps->Team->TeamScore) < RivalDifference)
+												{
+													MyRival = OtherController;
+													RivalDifference = (FGenericPlatformMath::Abs(ps2->Team->TeamScore - ps->Team->TeamScore));
+												}
+
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+
+					if (MyRival != NULL)
+					{
+						if (AFPSPlayerState* Rivalps = Cast<AFPSPlayerState>(MyRival->PlayerState))
+						{
+							if (AFPSProjectGameModeBase* GameMode = Cast<AFPSProjectGameModeBase>(GetWorld()->GetAuthGameMode())) {
+
+
+								float RivalScorePercent = ((double)Rivalps->Team->TeamScore / GameMode->ScoreToWin);
+
+								FPSController->UpdateRivalStats(Rivalps->Team->TeamNumber, Rivalps->Team->TeamScore, RivalScorePercent);
+								if (Rivalps->Team != NULL)
+								{
+									if (AFPSPlayerState* Myps = Cast<AFPSPlayerState>(FPSController->PlayerState))
+									{
+										Myps->SetRivalTeam(Rivalps->Team);
+									}
+								}
+
+							}
+						}
+					}
+				}
+
+			}
+		}
+		if (AFPSProjectGameModeBase* GameMode = Cast<AFPSProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
+		{
+			for (int32 i = 0; i < Teams.Num(); ++i)
+			{
+				if (ABaseTeam* team = Cast<ABaseTeam>(Teams[i]))
+				{
+					if (team->TeamScore >= GameMode->ScoreToWin)
+					{
+						gameState->WinningTeam = team->TeamNumber;
+						gameState->WinningMessage = team->TeamName.ToString() + " Won";
+						gameState->ClientUpdateWinningTeam(gameState->WinningTeam, FName(*gameState->WinningMessage));
+						gameState->CallHUDGameOver();
+						for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It) {
+							if (AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(*It)) {
+								if (AFPSCharacter* Player = Cast<AFPSCharacter>(PlayerController->GetPawn())) {
+									Player->SetCurrentState(EPlayerState::EPlayerWaiting);
+								}
+
+							}
+
+						}
+						gameState->SetCurrentState(EGamePlayState::EGameOver);
+					}
+				}
+			}
+
+		}
+
+	}
 }
 
 void AFPSProjectGameModeBase::RespawnPlayer(APlayerController* NewPlayer)

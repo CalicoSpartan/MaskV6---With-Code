@@ -121,7 +121,7 @@ public:
 		int32 GetDeaths();
 
 	UFUNCTION()
-		void TestBeginPlaySetCharacter(AFPSCharacter* newCharacter);
+		void SetMyCharacter(AFPSCharacter* newCharacter,AFPSPlayerState* ps);
 
 private:
 	UPROPERTY(Replicated, VisibleAnywhere, Category = "Team")

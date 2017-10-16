@@ -46,7 +46,7 @@ void AFPSPlayerState::BeginPlaySetMyCharacter(AFPSCharacter * NewCharacter)
 void AFPSPlayerState::SetMyCharacter(class AFPSCharacter* NewCharacter)
 {
 	MyCharacter = NewCharacter;
-	UE_LOG(LogClass, Log, TEXT("Set MyCharacter to: %s"), *NewCharacter->GetName());
+	
 }
 
 void AFPSPlayerState::SetTeam_Implementation(class ABaseTeam* MyTeam)

@@ -677,16 +677,19 @@ void AFPSCharacter::BeginPlay()
 	Super::BeginPlay();
 	CurrentState = EPlayerState::EPlayerPlaying;
 
-	if (AFPSPlayerController* pc = Cast<AFPSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
-	{
-	//	pc->TestBeginPlaySetCharacter(this);
-	}
-	
+
+
+
 	if (AFPSPlayerState* myPS = Cast<AFPSPlayerState>(PlayerState))
 	{
-		//myPS->BeginPlaySetMyCharacter(NULL);
-		myPS->BeginPlaySetMyCharacter(this);
+		if (AFPSPlayerController* myPC = Cast <AFPSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))
+		{
+			myPC->SetMyCharacter(this, myPS);
+		}
+
 	}
+
+
 	
 	switch (GetCurrentState())
 	{
