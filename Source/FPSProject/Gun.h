@@ -6,6 +6,7 @@
 #include "Engine/StaticMeshActor.h"
 #include "FPSCharacter.h"
 #include "WeaponSpawner.h"
+#include "FPSProjectGameModeBase.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Gun.generated.h"
 

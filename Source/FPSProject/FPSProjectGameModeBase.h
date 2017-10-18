@@ -88,6 +88,10 @@ public:
 		bool AddKillFeedEntry;
 	UFUNCTION(BlueprintImplementableEvent)
 		void ActuallyAddKillFeedEntry();
+	UFUNCTION()
+		void KillPlayer(AFPSCharacter* Killed, AFPSCharacter* Killer);
+	UFUNCTION()
+		void UpdateStats();
 	UPROPERTY(VisibleAnywhere, Category = "Rules")
 		int32 SpawnDelay;
 	UPROPERTY(VisibleAnywhere, Category = "Spawning")

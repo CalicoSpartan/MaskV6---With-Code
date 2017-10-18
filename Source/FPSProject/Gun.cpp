@@ -96,6 +96,16 @@ void AGun::Shoot(FVector ShotStart, FVector ShotDirection)
 					hitCharacter->SetHitData(BulletForce, shotData.BoneName, bulletTrail);
 					hitCharacter->ServerChangeHealthBy(-BulletDamage * DamagePercent);
 					hitCharacter->TriggerUpdateUI();
+					if (hitCharacter->GetCurrentHealth() <= 0.0f)
+					{
+						if (AFPSProjectGameModeBase* gm = Cast<AFPSProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
+						{
+							if (AFPSCharacter* killer = Cast<AFPSCharacter>(WeaponInstigator))
+							{
+								gm->KillPlayer(hitCharacter, killer);
+							}
+						}
+					}
 					GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Blue, FString::SanitizeFloat(hitCharacter->HealthPercentage));
 
 				}

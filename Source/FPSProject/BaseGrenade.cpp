@@ -149,6 +149,20 @@ void ABaseGrenade::Explode_Implementation()
 				Character->TriggerUpdateUI();
 				//UE_LOG(LogClass, Log, TEXT("DistanceToPlayer: %f"), disttoplayer);
 				UE_LOG(LogClass, Log, TEXT("Hit Player: %s Damage Delt: %f"),*Character->GetName(),-MaxDamage * damagepercent);
+				
+				if (Role == ROLE_Authority) {
+					if (Character->GetCurrentHealth() <= 0)
+					{
+						if (AFPSProjectGameModeBase* gm = Cast<AFPSProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
+						{
+							if (AFPSCharacter* thrower = Cast<AFPSCharacter>(GrenadeThrower))
+							{
+								gm->KillPlayer(Character, thrower);
+							}
+						}
+					}
+				}
+				
 			}
 		}
 	}
