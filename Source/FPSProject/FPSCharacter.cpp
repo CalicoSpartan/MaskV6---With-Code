@@ -206,20 +206,7 @@ void AFPSCharacter::SetCurrentState(EPlayerState NewState)
 
 	}
 }
-/*
-bool AFPSCharacter::ServerOnPlayerDeath_Validate()
-{
-	return true;
-}
 
-void AFPSCharacter::ServerOnPlayerDeath_Implementation()
-{
-	if (Role == ROLE_Authority)
-	{
-		OnPlayerDeath();
-	}
-}
-*/
 
 
 
@@ -254,57 +241,10 @@ void AFPSCharacter::OnPlayerDeath_Implementation()
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
 	IsDead = true;
-	SetCurrentState(EPlayerState::EPlayerDead);
-	/*
 	if (Role == ROLE_Authority)
 	{
-		UE_LOG(LogClass, Log, TEXT("Server Dropped Stuff"));
-		DropWeapon();
-		DropEquipment();
+		SetCurrentState(EPlayerState::EPlayerDead);
 	}
-	else
-	{
-		ServerDropWeapon();
-		ServerDropEquipment();
-		UE_LOG(LogClass, Log, TEXT("Im A Client"));
-	}
-	*/
-	/*
-	//////drop weapon
-	if (AFPSGameState* const GameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
-	{
-		if (GameState->GetCurrentState() == EGamePlayState::EPlaying)
-		{
-
-
-
-			if (CurrentPrimary != NULL)
-			{
-				if (AGun* Gun = Cast<AGun>(CurrentPrimary))
-				{
-					Gun->DroppedBy(this);
-					CurrentPrimary = NULL;
-
-				}
-			}
-
-		}
-	}
-
-	//////drop equipment
-	if (Grenades.Num() > 0)
-	{
-		for (int32 i = 0; i < Grenades.Num(); ++i)
-		{
-			if (AFragGrenade* const frag = Cast<AFragGrenade>(Grenades[i]))
-			{
-				ABaseGrenade* Grenade = GetWorld()->SpawnActor<ABaseGrenade>(FragSUB, GetActorLocation() + GetActorForwardVector() * 100.0, FRotator::ZeroRotator);
-				//Grenades.RemoveAt(i);
-			}
-		}
-		Grenades.Empty();
-	}
-	*/
 
 	if (LastHitForce != NULL && LastHitDirection != FVector::ZeroVector)
 	{

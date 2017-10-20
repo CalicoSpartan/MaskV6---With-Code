@@ -7,6 +7,7 @@
 #include "Runtime/Engine/Classes/GameFramework/SpringArmComponent.h"
 #include "FPSCharacter.h"
 #include "FPSPlayerState.h"
+#include "FPSGameState.h"
 #include "FPSPlayerController.h"
 #include "Spectator_Controller.generated.h"
 
@@ -76,8 +77,6 @@ public:
 		void AddYawRotation(float Value);
 	UFUNCTION()
 		void AddPitchRotation(float Value);
-	UFUNCTION(Server, Reliable, WithValidation)
-		void ServerUpdatePosition(FVector NewPosition);
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 		void ServerUpdateYaw(float Value);
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
@@ -85,7 +84,7 @@ public:
 	UFUNCTION(Server, Reliable,WithValidation)
 		void ServerChangePlayer();
 	UFUNCTION()
-		void UpdatePosition(FVector NewPosition);
+		void UpdatePosition(FVector something);
 
 
 	

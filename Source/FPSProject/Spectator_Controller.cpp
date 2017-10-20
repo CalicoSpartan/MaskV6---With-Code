@@ -7,7 +7,7 @@
 // Sets default values
 ASpectator_Controller::ASpectator_Controller()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 	bReplicateMovement = true;
@@ -15,16 +15,13 @@ ASpectator_Controller::ASpectator_Controller()
 	RootComponent = MyRoot;
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	//CameraBoom->bUsePawnControlRotation = true;
-	//bUseControllerRotationPitch = true;
-	//bUseControllerRotationYaw = true;
+
 }
 
 
 void ASpectator_Controller::SetTeammateStates_Implementation(const TArray<AFPSPlayerState*>& TeamStates)
 {
 	TeammateStates = TeamStates;
-	//UE_LOG(LogClass, Log, TEXT("How Many Teammates: %d"), TeammateStates.Num());
 }
 
 // Called when the game starts or when spawned
@@ -34,10 +31,6 @@ void ASpectator_Controller::BeginPlay()
 	NetUpdateFrequency = 20.0f;
 }
 
-void ASpectator_Controller::ServerUpdatePosition_Implementation(FVector NewPosition)
-{
-	UpdatePosition(NewPosition);
-}
 
 void ASpectator_Controller::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -55,96 +48,43 @@ void ASpectator_Controller::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	
 }
 
-bool ASpectator_Controller::ServerUpdatePosition_Validate(FVector NewPosition)
-{
-	return true;
-}
-void ASpectator_Controller::UpdatePosition(FVector NewPosition)
+
+void ASpectator_Controller::UpdatePosition(FVector something)
 {
 	
 	if (FollowedCharacter != NULL)
 	{
 		
-		//UE_LOG(LogClass, Log, TEXT("%s"), *LastKnownPlayerLocation.ToString());
+		
 		if (Role == ROLE_Authority)
 		{
 			SetActorLocation(LastKnownPlayerLocation + FVector(0,0,90.0f));
-			//UE_LOG(LogClass, Log, TEXT("location: %s"), *FollowedCharacter->GetMesh()->GetComponentLocation().ToString());
+			
 			
 		}
-		else
-		{
-			UE_LOG(LogClass, Log, TEXT("Client"));
-		}
 		
-		//SetActorLocation(FollowedCharacter->GetMesh()->GetComponentLocation());
-		//CameraBoom->SetWorldLocation(FollowedCharacter->GetMesh()->GetComponentLocation());
-		//CameraBoom->SetWorldLocation(FollowedCharacter->GetActorLocation());
+
 	}
 }
 // Called every frame
 void ASpectator_Controller::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (GetController())
-	{
-		//UE_LOG(LogClass, Log, TEXT("Has Controller"));
-	}
-	else
-	{
-		//UE_LOG(LogClass, Log, TEXT("NO CONTROLLER"));
-	}
+
 	
 	if (Role == ROLE_Authority)
 	{
 
 		if (FollowedCharacter)
 		{
-			/*
-			if (AttachedToMesh == false)
-			{
-				FAttachmentTransformRules Rules = FAttachmentTransformRules{ EAttachmentRule::SnapToTarget,false };
-				Rules.RotationRule = EAttachmentRule::KeepRelative;
-				/*
-				if (Rules != NULL)
-				{
-					Rules->RotationRule = EAttachmentRule::KeepRelative;
-					UE_LOG(LogClass, Log, TEXT("rules exists"));
-
-				}
-				else
-				{
-					UE_LOG(LogClass, Log, TEXT("rules does not exists"));
-				}
-				
-				//FAttachmentTransformRules::RotationRule = EAttachmentRule::KeepRelative;
-				MyRoot->AttachToComponent(FollowedCharacter->GetMesh(),Rules);
-				//CameraBoom->parent
-				AttachedToMesh = true;
-			}
-			*/
-			//MyRoot->SetupAttachment(FollowedCharacter->GetMesh());
 			
 			LastKnownPlayerLocation = FollowedCharacter->GetMesh()->GetBoneLocation(FName(TEXT("spine_03")));
-			//MyRoot->SetWorldRotation(FRotator(0, 0, 0));
-			//UE_LOG(LogClass, Log, TEXT("FollowedCharacterName: %s"),*FollowedCharacter->GetActorLocation().ToString());
-			UpdatePosition(LastKnownPlayerLocation);
+			UpdatePosition(FVector::ZeroVector);
 			
 		}
 	}
-	else if (Role == ROLE_AutonomousProxy)
-	{
-		if (FollowedCharacter)
-		{
-			//UE_LOG(LogClass, Log, TEXT("AutonomousProxy"));
-			//ServerUpdatePosition(FollowedCharacter->GetMesh()->GetComponentLocation());
-		}
-	}
-	else
-	{
-		//UE_LOG(LogClass, Log, TEXT("Unknown role"));
-		//UpdatePosition();
-	}
+
+
 	
 }
 
@@ -182,8 +122,7 @@ void ASpectator_Controller::ServerUpdateYaw_Implementation(float Value)
 	{
 		float RotationValue = Value * RotationSpeedMultiplier;
 		SetActorRotation(FRotator(GetActorRotation().Pitch, GetActorRotation().Yaw + RotationValue, GetActorRotation().Roll));
-		//AddYawRotation(RotationValue);
-		//CameraBoom->AddWorldRotation(FRotator(0.0f, RotationValue, 0.0f).Quaternion());
+
 	}
 }
 void ASpectator_Controller::ServerUpdatePitch_Implementation(float Value)
@@ -199,11 +138,9 @@ void ASpectator_Controller::ServerUpdatePitch_Implementation(float Value)
 		}
 		else
 		{
-			//SetActorRotation(FRotator(GetActorRotation().Pitch + RotationValue, GetActorRotation().Yaw, GetActorRotation().Roll));
+			
 		}
-		//AddPitchRotation(RotationValue);
-		
-		//CameraBoom->AddWorldRotation(FRotator(RotationValue, 0.0f, 0.0f).Quaternion());
+
 	}
 }
 
@@ -224,133 +161,111 @@ bool ASpectator_Controller::ServerChangePlayer_Validate()
 
 void ASpectator_Controller::ServerChangePlayer_Implementation()
 {
-	UE_LOG(LogClass, Log, TEXT("I was called"));
-	
-	if (FollowedCharacter) {
-		UE_LOG(LogClass, Log, TEXT("followedcharacter exists"));
-		if (FollowedController)
+	if (AFPSGameState* gameState = Cast<AFPSGameState>(GetWorld()->GetGameState()))
+	{
+		if (gameState->GetCurrentState() != EGamePlayState::EGameOver)
 		{
-			UE_LOG(LogClass, Log, TEXT("followedcontroller exists"));
-			if (TeammateStates.Num() > 0) {
-				UE_LOG(LogClass, Log, TEXT("teamstates length > 0"));
-				if (AFPSPlayerState* followedCharacterPS = Cast<AFPSPlayerState>(FollowedController->PlayerState))
+
+
+
+			if (FollowedCharacter) {
+				if (FollowedController)
 				{
-					if (TeammateStates.Find(followedCharacterPS) != -1)
-					{
-						UE_LOG(LogClass, Log, TEXT("character is on team"));
-						if (CurrentTeamIndex == -1)
+					if (TeammateStates.Num() > 0) {
+						if (AFPSPlayerState* followedCharacterPS = Cast<AFPSPlayerState>(FollowedController->PlayerState))
 						{
-							CurrentTeamIndex = TeammateStates.Find(followedCharacterPS);
-						}
-						if (CurrentTeamIndex == TeammateStates.Num() - 1)
-						{
-							UE_LOG(LogClass, Log, TEXT("last player, current team index: %d"),CurrentTeamIndex);
-							
-							for (int32 i = 0; i < TeammateStates.Num(); ++i)
+							if (TeammateStates.Find(followedCharacterPS) != -1)
 							{
-								if (i != CurrentTeamIndex)
+
+								if (CurrentTeamIndex == -1)
 								{
-									if (TeammateStates[i]->MyCharacter != NULL)
-									{
-										if (TeammateStates[i]->MyCharacter->GetCurrentState() != EPlayerState::EPlayerDead)
-										{
-											//FollowedCharacter = TeammateStates[i]->MyCharacter;
-											//SetFollowedCharacter(TeammateStates[i]->MyCharacter);
-											//UE_LOG(LogClass, Log, TEXT("found player 1"));
-											UE_LOG(LogClass, Log, TEXT("new follow name: %s  Index is %d"), *TeammateStates[i]->MyCharacter->GetName(),i);
-											FollowedCharacter = TeammateStates[i]->MyCharacter;
-											CurrentTeamIndex = i;
-											if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(FollowedCharacter->PlayerState))
-											{
-												PlayerName = FName(*ps->UserName);
-											}
-											return;
-										}
-									}
+									CurrentTeamIndex = TeammateStates.Find(followedCharacterPS);
 								}
-							}
-							
-							
-						}
-						else
-						{
-							UE_LOG(LogClass, Log, TEXT("not last player, current team index: %d"), CurrentTeamIndex);
-							
-							for (int32 i = CurrentTeamIndex + 1; i < TeammateStates.Num(); ++i)
-							{
-								if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(TeammateStates[i]))
+								if (CurrentTeamIndex == TeammateStates.Num() - 1)
 								{
-									if (ps->MyCharacter != NULL)
+
+
+									for (int32 i = 0; i < TeammateStates.Num(); ++i)
 									{
 										if (i != CurrentTeamIndex)
 										{
-											if (ps->MyCharacter->GetCurrentState() != EPlayerState::EPlayerDead)
+											if (TeammateStates[i]->MyCharacter != NULL)
 											{
-												UE_LOG(LogClass, Log, TEXT("new follow2 name: %s Index is: %d"), *TeammateStates[i]->MyCharacter->GetName(),i);
-												FollowedCharacter = TeammateStates[i]->MyCharacter;
-												CurrentTeamIndex = i;
-												if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(FollowedCharacter->PlayerState))
+												if (TeammateStates[i]->MyCharacter->GetCurrentState() != EPlayerState::EPlayerDead)
 												{
-													PlayerName = FName(*ps->UserName);
+													FollowedCharacter = TeammateStates[i]->MyCharacter;
+													CurrentTeamIndex = i;
+													if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(FollowedCharacter->PlayerState))
+													{
+														PlayerName = FName(*ps->UserName);
+													}
+													return;
 												}
-												return;
 											}
 										}
-
-										//FollowedCharacter = TeammateStates[i]->MyCharacter;
-
-										//SetFollowedCharacter(TeammateStates[i]->MyCharacter);
-
 									}
-									else
-									{
-										UE_LOG(LogClass, Log, TEXT("MyCharacter is NULL, %d"),i);
-									}
+
+
 								}
 								else
 								{
-									UE_LOG(LogClass, Log, TEXT("cast to player state failed"));
-								}
 
-							}
-							for (int32 i = 0; i < CurrentTeamIndex; ++i)
-							{
-								if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(TeammateStates[i]))
-								{
-									if (ps->MyCharacter != NULL)
+									for (int32 i = CurrentTeamIndex + 1; i < TeammateStates.Num(); ++i)
 									{
-										if (ps->MyCharacter->GetCurrentState() != EPlayerState::EPlayerDead)
+										if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(TeammateStates[i]))
 										{
-											UE_LOG(LogClass, Log, TEXT("new follow3 name: %s  Index is: %d"), *TeammateStates[i]->MyCharacter->GetName(),i);
-											FollowedCharacter = TeammateStates[i]->MyCharacter;
-											CurrentTeamIndex = i;
-											if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(FollowedCharacter->PlayerState))
+											if (ps->MyCharacter != NULL)
 											{
-												PlayerName = FName(*ps->UserName);
+												if (i != CurrentTeamIndex)
+												{
+													if (ps->MyCharacter->GetCurrentState() != EPlayerState::EPlayerDead)
+													{
+														FollowedCharacter = TeammateStates[i]->MyCharacter;
+														CurrentTeamIndex = i;
+														if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(FollowedCharacter->PlayerState))
+														{
+															PlayerName = FName(*ps->UserName);
+														}
+														return;
+													}
+												}
+
+
 											}
-											return;
 										}
 
-										//FollowedCharacter = TeammateStates[i]->MyCharacter;
-
-										//SetFollowedCharacter(TeammateStates[i]->MyCharacter);
 
 									}
-									else
+									for (int32 i = 0; i < CurrentTeamIndex; ++i)
 									{
-										UE_LOG(LogClass, Log, TEXT("MyCharacter is NULL, %d"), i);
+										if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(TeammateStates[i]))
+										{
+											if (ps->MyCharacter != NULL)
+											{
+												if (ps->MyCharacter->GetCurrentState() != EPlayerState::EPlayerDead)
+												{
+													FollowedCharacter = TeammateStates[i]->MyCharacter;
+													CurrentTeamIndex = i;
+													if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(FollowedCharacter->PlayerState))
+													{
+														PlayerName = FName(*ps->UserName);
+													}
+													return;
+												}
+
+
+
+											}
+
+										}
 									}
-								}
-								else
-								{
-									UE_LOG(LogClass, Log, TEXT("cast to player state failed"));
+
+
 								}
 							}
-							
 
 						}
 					}
-
 				}
 			}
 		}

@@ -377,164 +377,173 @@ void AFPSProjectGameModeBase::RespawnPlayer(APlayerController* NewPlayer)
 	AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(NewPlayer);
 	TArray<AFPSPlayerStart*> PreferredStarts;
 	bool checkforsafety = true;
-	for (int32 i = 0; i < 5; ++i) {
-		for (TActorIterator<AFPSPlayerStart> PlayerStart(GetWorld()); PlayerStart; ++PlayerStart)
+	if (AFPSGameState* gameState = Cast<AFPSGameState>(GameState))
+	{
+		if (gameState->GetCurrentState() != EGamePlayState::EGameOver)
 		{
-			if (PlayerController)
-			{
-				if (PlayerStart->Tags.Contains("RespawnPoint"))
+
+
+
+			for (int32 i = 0; i < 5; ++i) {
+				for (TActorIterator<AFPSPlayerStart> PlayerStart(GetWorld()); PlayerStart; ++PlayerStart)
 				{
-					for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+					if (PlayerController)
 					{
-						AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(*Iterator);
-						if (PlayerController)
+						if (PlayerStart->Tags.Contains("RespawnPoint"))
 						{
-							if (PlayerController != NewPlayer) {
-								if (AFPSPlayerController* NewFPSPlayer = Cast<AFPSPlayerController>(NewPlayer))
+							for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+							{
+								AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(*Iterator);
+								if (PlayerController)
 								{
+									if (PlayerController != NewPlayer) {
+										if (AFPSPlayerController* NewFPSPlayer = Cast<AFPSPlayerController>(NewPlayer))
+										{
 
-									if (AFPSPlayerState* playerstate = Cast<AFPSPlayerState>(PlayerController->PlayerState)) {
-										if (AFPSPlayerState* fpsplayerstate = Cast<AFPSPlayerState>(NewFPSPlayer->PlayerState)) {
-											if (playerstate->Team != fpsplayerstate->Team)
-											{
-												AFPSCharacter* PlayerCharacter = Cast<AFPSCharacter>(PlayerController->GetPawn());
-												if (PlayerCharacter) {
-													UCameraComponent* PlayerCamera = Cast<UCameraComponent>(PlayerCharacter->FPSCameraComponent);
-													if (PlayerCamera)
+											if (AFPSPlayerState* playerstate = Cast<AFPSPlayerState>(PlayerController->PlayerState)) {
+												if (AFPSPlayerState* fpsplayerstate = Cast<AFPSPlayerState>(NewFPSPlayer->PlayerState)) {
+													if (playerstate->Team != fpsplayerstate->Team)
 													{
-														FVector CameraLocation = PlayerCamera->GetComponentLocation();
-														FVector SpawnPointLocation = PlayerStart->GetActorLocation();
-														FVector DirectionBetween = (SpawnPointLocation - CameraLocation).GetSafeNormal();
-														FVector CameraDirection = PlayerCamera->GetForwardVector().GetSafeNormal();
-														float dotvalue = FGenericPlatformMath::Abs(FVector::DotProduct(DirectionBetween, CameraDirection));
-
-														if (dotvalue > .68f) {
-
-
-															FHitResult hit;
-
-															if (GetWorld()->LineTraceSingleByChannel(hit, CameraLocation, CameraLocation + (DirectionBetween * 10000), ECollisionChannel::ECC_Camera))
+														AFPSCharacter* PlayerCharacter = Cast<AFPSCharacter>(PlayerController->GetPawn());
+														if (PlayerCharacter) {
+															UCameraComponent* PlayerCamera = Cast<UCameraComponent>(PlayerCharacter->FPSCameraComponent);
+															if (PlayerCamera)
 															{
+																FVector CameraLocation = PlayerCamera->GetComponentLocation();
+																FVector SpawnPointLocation = PlayerStart->GetActorLocation();
+																FVector DirectionBetween = (SpawnPointLocation - CameraLocation).GetSafeNormal();
+																FVector CameraDirection = PlayerCamera->GetForwardVector().GetSafeNormal();
+																float dotvalue = FGenericPlatformMath::Abs(FVector::DotProduct(DirectionBetween, CameraDirection));
+
+																if (dotvalue > .68f) {
 
 
-																if (AFPSPlayerStart* spawnpoint = Cast<AFPSPlayerStart>(hit.GetActor())) {
+																	FHitResult hit;
+
+																	if (GetWorld()->LineTraceSingleByChannel(hit, CameraLocation, CameraLocation + (DirectionBetween * 10000), ECollisionChannel::ECC_Camera))
+																	{
+
+
+																		if (AFPSPlayerStart* spawnpoint = Cast<AFPSPlayerStart>(hit.GetActor())) {
+
+																		}
+																		else {
+
+
+																			PreferredStarts.AddUnique(*PlayerStart);
+																		}
+																	}
+
+																	if (i >= 3) {
+																		UE_LOG(LogClass, Log, TEXT("Respawning anyway"));
+																		PreferredStarts.AddUnique(*PlayerStart);
+																	}
 
 																}
-																else {
+																else
+																{
+																	if (FVector::Dist(CameraLocation, SpawnPointLocation) > SafeSpawnDistance || i >= 3) {
+																		PreferredStarts.AddUnique(*PlayerStart);
+																	}
 
-
-																	PreferredStarts.AddUnique(*PlayerStart);
 																}
-															}
 
-															if (i >= 3) {
-																UE_LOG(LogClass, Log, TEXT("Respawning anyway"));
-																PreferredStarts.AddUnique(*PlayerStart);
 															}
-
 														}
-														else
-														{
-															if (FVector::Dist(CameraLocation, SpawnPointLocation) > SafeSpawnDistance || i >= 3) {
-																PreferredStarts.AddUnique(*PlayerStart);
-															}
-
-														}
-
 													}
 												}
 											}
 										}
 									}
 								}
+
 							}
 						}
-
 					}
 				}
-			}
-		}
-		if (PreferredStarts.Num() == 0) {
+				if (PreferredStarts.Num() == 0) {
 
-		}
-		else
-		{
-			break;
-		}
-	}
-	if (PreferredStarts.Num() > 1) {
-		AFPSPlayerStart* BestStart = PreferredStarts[FMath::RandRange(0, PreferredStarts.Num() - 1)];
-		float SpawnDistance = 0.0f;
-		for (int32 i = 0; i < PreferredStarts.Num(); ++i) {
-			for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
-			{
-
-				AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(*Iterator);
-				if (PlayerController)
+				}
+				else
 				{
-					if (PlayerController != NewPlayer) {
-						if (AFPSPlayerController* NewFPSPlayer = Cast<AFPSPlayerController>(NewPlayer))
+					break;
+				}
+			}
+			if (PreferredStarts.Num() > 1) {
+				AFPSPlayerStart* BestStart = PreferredStarts[FMath::RandRange(0, PreferredStarts.Num() - 1)];
+				float SpawnDistance = 0.0f;
+				for (int32 i = 0; i < PreferredStarts.Num(); ++i) {
+					for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+					{
+
+						AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(*Iterator);
+						if (PlayerController)
 						{
-							if (AFPSPlayerState* playerstate = Cast<AFPSPlayerState>(PlayerController->PlayerState)) {
-								if (AFPSPlayerState* fpsplayerstate = Cast<AFPSPlayerState>(NewFPSPlayer->PlayerState)) {
-									if (playerstate->Team != fpsplayerstate->Team)
-									{
-
-
-										AFPSCharacter* PlayerCharacter = Cast<AFPSCharacter>(PlayerController->GetPawn());
-										if (PlayerCharacter) {
-											UCameraComponent* PlayerCamera = Cast<UCameraComponent>(PlayerCharacter->FPSCameraComponent);
-											if (PlayerCamera)
+							if (PlayerController != NewPlayer) {
+								if (AFPSPlayerController* NewFPSPlayer = Cast<AFPSPlayerController>(NewPlayer))
+								{
+									if (AFPSPlayerState* playerstate = Cast<AFPSPlayerState>(PlayerController->PlayerState)) {
+										if (AFPSPlayerState* fpsplayerstate = Cast<AFPSPlayerState>(NewFPSPlayer->PlayerState)) {
+											if (playerstate->Team != fpsplayerstate->Team)
 											{
-												FVector CameraLocation = PlayerCamera->GetComponentLocation();
-												FVector SpawnPointLocation = PreferredStarts[i]->GetActorLocation();
-												if (FVector::Dist(CameraLocation, SpawnPointLocation) > SpawnDistance)
-												{
-													BestStart = PreferredStarts[i];
-													SpawnDistance = FVector::Dist(CameraLocation, SpawnPointLocation);
+
+
+												AFPSCharacter* PlayerCharacter = Cast<AFPSCharacter>(PlayerController->GetPawn());
+												if (PlayerCharacter) {
+													UCameraComponent* PlayerCamera = Cast<UCameraComponent>(PlayerCharacter->FPSCameraComponent);
+													if (PlayerCamera)
+													{
+														FVector CameraLocation = PlayerCamera->GetComponentLocation();
+														FVector SpawnPointLocation = PreferredStarts[i]->GetActorLocation();
+														if (FVector::Dist(CameraLocation, SpawnPointLocation) > SpawnDistance)
+														{
+															BestStart = PreferredStarts[i];
+															SpawnDistance = FVector::Dist(CameraLocation, SpawnPointLocation);
+														}
+													}
 												}
 											}
+
 										}
 									}
-
 								}
 							}
 						}
 					}
+
+				}
+				int32 PlayerStartIndex = FMath::RandRange(0, PreferredStarts.Num() - 1);
+				NewPlayer->SetPawn(SpawnDefaultPawnFor(NewPlayer, BestStart));
+
+				RestartPlayer(NewPlayer);
+				AFPSCharacter* Character = Cast<AFPSCharacter>(NewPlayer->GetPawn());
+				if (Character)
+				{
+					Character->TriggerAddUI();
+					Character->AddTeamColor();
+
+				}
+				if (PlayerController)
+				{
+
 				}
 			}
+			else {
+				int32 PlayerStartIndex = 0;
+				NewPlayer->SetPawn(SpawnDefaultPawnFor(NewPlayer, PreferredStarts[PlayerStartIndex]));
 
-		}
-		int32 PlayerStartIndex = FMath::RandRange(0, PreferredStarts.Num() - 1);
-		NewPlayer->SetPawn(SpawnDefaultPawnFor(NewPlayer, BestStart));
+				RestartPlayer(NewPlayer);
+				AFPSCharacter* Character = Cast<AFPSCharacter>(NewPlayer->GetPawn());
+				if (Character)
+				{
+					Character->TriggerAddUI();
 
-		RestartPlayer(NewPlayer);
-		AFPSCharacter* Character = Cast<AFPSCharacter>(NewPlayer->GetPawn());
-		if (Character)
-		{
-			Character->TriggerAddUI();
-			Character->AddTeamColor();
+				}
+				if (PlayerController)
+				{
 
-		}
-		if (PlayerController)
-		{
-
-		}
-	}
-	else {
-		int32 PlayerStartIndex = 0;
-		NewPlayer->SetPawn(SpawnDefaultPawnFor(NewPlayer, PreferredStarts[PlayerStartIndex]));
-
-		RestartPlayer(NewPlayer);
-		AFPSCharacter* Character = Cast<AFPSCharacter>(NewPlayer->GetPawn());
-		if (Character)
-		{
-			Character->TriggerAddUI();
-
-		}
-		if (PlayerController)
-		{
-
+				}
+			}
 		}
 	}
 
