@@ -7,6 +7,7 @@
 #include "Runtime/Engine/Classes/GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Engine/StaticMeshActor.h"
+#include "GrenadeSpawner.h"
 #include "BaseGrenade.generated.h"
 
 /**
@@ -51,6 +52,8 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, Category = "Grenade")
 		bool bIsActive = false;
 	
+	UPROPERTY(Replicated, EditAnywhere, Category = "Spawning")
+		class AGrenadeSpawner* MySpawner;
 
 	UFUNCTION(NetMulticast, Reliable, WithValidation)
 		void EnablePhysics(APawn* Thrower);

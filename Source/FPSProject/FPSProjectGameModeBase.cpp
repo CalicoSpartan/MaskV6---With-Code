@@ -934,6 +934,13 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 			WeaponSpawns[i]->SpawnWeapon();
 		}
 	}
+	for (int32 i = 0; i < GrenadeSpawns.Num(); ++i)
+	{
+		if (GrenadeSpawns[i]->SpawnOnStart == true)
+		{
+			GrenadeSpawns[i]->SpawnGrenade();
+		}
+	}
 
 	//TArray<AFPSPlayerController> PlayerControllers;
 	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), AFPSPlayerController::StaticClass(), PlayerControllers);
@@ -1002,6 +1009,10 @@ void AFPSProjectGameModeBase::BeginPlay()
 	for (TActorIterator<AWeaponSpawner> WeaponSpawner(GetWorld()); WeaponSpawner; ++WeaponSpawner)
 	{
 		WeaponSpawns.Add(*WeaponSpawner);
+	}
+	for (TActorIterator<AGrenadeSpawner> GrenadeSpawner(GetWorld()); GrenadeSpawner; ++GrenadeSpawner)
+	{
+		GrenadeSpawns.Add(*GrenadeSpawner);
 	}
 
 	

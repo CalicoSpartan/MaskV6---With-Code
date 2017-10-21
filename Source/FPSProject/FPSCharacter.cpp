@@ -74,29 +74,9 @@ void AFPSCharacter::DestroySelf_Implementation()
 	}
 }
 
-void AFPSCharacter::ShowEnemyName_Implementation(class AFPSCharacter* Enemy)
-{
-	ShowEnemyNameBluePrint(Enemy);
-}
 
-void AFPSCharacter::Update()
-{
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this);
-	FHitResult hit;
-	
-	if (GetWorld()->LineTraceSingleByChannel(hit, FPSCameraComponent->GetComponentLocation(), FPSCameraComponent->GetComponentLocation() + FPSCameraComponent->GetForwardVector() * 1800.0f, ECollisionChannel::ECC_Visibility, QueryParams))
-	{
-		if (AFPSCharacter* HitCharacter = Cast<AFPSCharacter>(hit.GetActor()))
-		{
-			if (AFPSPlayerState* HitPlayerState = Cast<AFPSPlayerState>(HitCharacter->PlayerState))
-			{
-				ShowEnemyName(HitCharacter);
-			}
 
-		}
-	}
-}
+
 
 void AFPSCharacter::AddTeamColor_Implementation()
 {
@@ -367,6 +347,17 @@ void AFPSCharacter::OnShoot()
 	}
 
 }
+void AFPSCharacter::StopZoom()
+{
+	if (Role == ROLE_Authority)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ZoomTimer);
+		SetIsZoomed(false);
+
+
+		GetWorld()->GetTimerManager().SetTimer(ZoomTimer, this, &AFPSCharacter::Zoom, .005f, true);
+	}
+}
 void AFPSCharacter::OnStopShoot()
 {
 	ServerOnStopShoot();
@@ -430,11 +421,7 @@ bool AFPSCharacter::ServerOnStopZoom_Validate()
 }
 void AFPSCharacter::ServerOnStopZoom_Implementation()
 {
-	GetWorld()->GetTimerManager().ClearTimer(ZoomTimer);
-	SetIsZoomed(false);
-
-
-	GetWorld()->GetTimerManager().SetTimer(ZoomTimer, this, &AFPSCharacter::Zoom, .005f, true);
+	StopZoom();
 
 
 }
@@ -651,7 +638,7 @@ void AFPSCharacter::BeginPlay()
 	{
 
 	}
-	GetWorld()->GetTimerManager().SetTimer(UpdateTimer, this, &AFPSCharacter::Update, UpdateDelay, true);
+	
 	bCanSwitchWeapon = true;
 }
 

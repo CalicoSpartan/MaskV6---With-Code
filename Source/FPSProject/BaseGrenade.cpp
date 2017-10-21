@@ -52,6 +52,7 @@ void ABaseGrenade::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(ABaseGrenade, MaxDamageBlastRadius);
 	DOREPLIFETIME(ABaseGrenade, ProjectileMovement);
 	DOREPLIFETIME(ABaseGrenade, bIsActive);
+	DOREPLIFETIME(ABaseGrenade, MySpawner);
 
 }
 bool ABaseGrenade::EnablePhysics_Validate(APawn* Thrower)
@@ -161,9 +162,17 @@ void ABaseGrenade::Explode_Implementation()
 							}
 						}
 					}
+
 				}
 				
 			}
+		}
+	}
+	if (Role == ROLE_Authority)
+	{
+		if (MySpawner)
+		{
+			MySpawner->ClientSetRespawnTimer();
 		}
 	}
 	UE_LOG(LogClass, Log, TEXT("Detonated"));

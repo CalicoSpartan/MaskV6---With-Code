@@ -92,6 +92,10 @@ void AGun::Shoot(FVector ShotStart, FVector ShotDirection)
 						*/
 					}
 					hitCharacter->Shooter = WeaponInstigator;
+					if (hitCharacter->IsZoomed)
+					{
+						hitCharacter->StopZoom();
+					}
 					FVector bulletTrail = (shotData.Location - shotData.TraceStart).GetSafeNormal();
 					hitCharacter->SetHitData(BulletForce, shotData.BoneName, bulletTrail);
 					hitCharacter->ServerChangeHealthBy(-BulletDamage * DamagePercent);

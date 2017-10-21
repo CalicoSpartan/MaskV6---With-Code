@@ -55,10 +55,6 @@ public:
 		bool bCanSwitchWeapon = true;
 	UFUNCTION()
 		void SetCanSwitchWeapon();
-	UFUNCTION()
-		void Update();
-	UPROPERTY(EditAnywhere, Category = "Update")
-		float UpdateDelay;
 	UPROPERTY(Replicated,EditAnywhere, Category = "Grenade")
 		float GrenadeThrowStrength = 30.0f;
 	UPROPERTY(Replicated,EditAnywhere, Category = "Grenade")
@@ -70,10 +66,8 @@ public:
 	UPROPERTY(Replicated,BlueprintReadWrite, EditAnywhere, Category = "Grenade")
 		bool bIsNearGrenade = false;
 
-	UFUNCTION(NetMulticast, Reliable)
-		void ShowEnemyName(class AFPSCharacter* Enemy);
-	UFUNCTION(BlueprintImplementableEvent)
-		void ShowEnemyNameBluePrint(class AFPSCharacter* Enemy);
+
+
 	UPROPERTY(Replicated,EditAnywhere,BlueprintReadWrite)
 	TArray<ABaseGrenade*> Grenades;
 	UPROPERTY(EditAnywhere)	
@@ -92,7 +86,7 @@ public:
 		float DeadWeaponDropDelay = 1.5f;
 	UFUNCTION()
 		void DeadDropWeapon();
-	FTimerHandle UpdateTimer;
+
 	UFUNCTION(NetMultiCast, Reliable, WithValidation)
 		void TriggerDeathUI();
 	UFUNCTION(BlueprintNativeEvent)
@@ -322,6 +316,8 @@ public:
 		void GrenadeNearby();
 	UFUNCTION(Reliable, Server, WithValidation)
 		virtual void ServerOnStopZoom();
+	UFUNCTION()
+		virtual void StopZoom();
 
 	UFUNCTION(Reliable, Server, WithValidation)
 		virtual void ServerOnShoot();
