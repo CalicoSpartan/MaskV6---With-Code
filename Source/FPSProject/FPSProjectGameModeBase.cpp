@@ -55,493 +55,308 @@ AFPSProjectGameModeBase::AFPSProjectGameModeBase()
 void AFPSProjectGameModeBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	/*
-	if (AFPSGameState* gameState = Cast<AFPSGameState>(GameState))
-	{
 
-
-
-
-
-
-		if (gameState->GetCurrentState() == EGamePlayState::EPlaying)
-		{
-
-			//UE_LOG(LogClass, Log, TEXT("KILLED"));
-			for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It) {
-				if (APlayerController* PlayerController = Cast<APlayerController>(*It)) {
-					if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(PlayerController->PlayerState))
-					{
-						if (ps->Betrayals >= 2)
-						{
-							UE_LOG(LogClass, Log, TEXT("Player Should Be Booted"));
-						}
-					}
-					if (AFPSCharacter* Player = Cast<AFPSCharacter>(PlayerController->GetPawn())) {
-						if (Player->GetCurrentHealth() <= 0.0f) {
-							if (Player->Shooter == NULL) {
-								Player->Shooter = Player;
-							}
-							//UE_LOG(LogClass, Log, TEXT("KILLED"));
-
-
-							if (AFPSPlayerController* FPSController = Cast<AFPSPlayerController>(PlayerController))
-							{
-								FPSController->MyPlayerState->SetDeathsMultiCast(1);
-
-								if (AFPSPlayerController* ShooterController = Cast<AFPSPlayerController>(Player->Shooter->Controller))
-								{
-									if (ShooterController->MyPlayerState)
-									{
-										if (ShooterController->MyPlayerState->Team != FPSController->MyPlayerState->Team)
-										{
-
-
-											ShooterController->MyPlayerState->SetKillsMultiCast(1);
-											ShooterController->MyPlayerState->SetScoreMultiCast(10);
-											gameState->LastKiller = ShooterController->MyPlayerState->UserName;
-											gameState->LastKilled = FPSController->MyPlayerState->UserName;
-
-
-											gameState->KillFeedMessage = TEXT("" + gameState->LastKiller + " killed " + gameState->LastKilled);//(TEXT("%s killed %f"), LastKiller, LastKilled);
-
-											gameState->ClientUpdateKillFeedMessage(FName(*gameState->KillFeedMessage));
-
-											//SetNewKillFeedMessage(KillFeedMessage);
-
-											if (AFPSPlayerController* FPSController = Cast<AFPSPlayerController>(Player->Shooter->Controller))
-											{
-												if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(FPSController->PlayerState))
-												{
-
-													if (ps->Team->TeamNumber != 0)
-													{
-														if (AFPSProjectGameModeBase* GameMode = Cast<AFPSProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
-														{
-															ps->Team->ChangeScore(GameMode->PointsPerKill);
-															/*
-															if (ps->Team->TeamNumber == 1)
-															{
-
-															ClientUpdateScore(1, GameMode->PointsPerKill);
-															UpdateScoreBlueprintEvent();
-
-															}
-															if (ps->Team->TeamNumber == 2)
-															{
-															ClientUpdateScore(2, GameMode->PointsPerKill);
-															UpdateScoreBlueprintEvent();
-															UE_LOG(LogClass, Log, TEXT("Team2 Scored"));
-
-															}
-															if (ps->Team->TeamNumber == 3)
-															{
-															ClientUpdateScore(3, GameMode->PointsPerKill);
-															UpdateScoreBlueprintEvent();
-
-															}
-															if (ps->Team->TeamNumber == 4)
-															{
-															ClientUpdateScore(4, GameMode->PointsPerKill);
-															UpdateScoreBlueprintEvent();
-
-															}
-															*//*
-
-														}
-
-													}
-												}
-												//}
-
-
-											}
-										}
-										else
-										{
-											gameState->LastKiller = ShooterController->MyPlayerState->UserName;
-											gameState->LastKilled = FPSController->MyPlayerState->UserName;
-
-											gameState->KillFeedMessage = TEXT("" + gameState->LastKiller + " betrayed " + gameState->LastKilled);
-											ShooterController->MyPlayerState->Betrayals += 1;
-											gameState->ClientUpdateKillFeedMessage(FName(*gameState->KillFeedMessage));
-										}
-									}
-
-								}
-							}
-
-
-
-							////////////////////////////////////////////////////////////////////////////////////////////////
-							for (int32 i = 0; i < Teams.Num(); ++i)
-							{
-								if (ABaseTeam* Team = Cast<ABaseTeam>(Teams[i]))
-								{
-									int32 BestScore = -1;
-									TArray<AFPSPlayerState*> CorrectTeamOrder;
-									for (int32 psindex = 0; psindex < Team->TeamPlayerStates.Num(); ++psindex)
-									{
-										if (AFPSPlayerState* playerstate = Cast<AFPSPlayerState>(Team->TeamPlayerStates[psindex]))
-										{
-											if (playerstate->GetScore() > BestScore)
-											{
-												CorrectTeamOrder.Insert(playerstate, 0);
-												BestScore = playerstate->GetScore();
-											}
-											else if (CorrectTeamOrder.Num() > 1)
-											{
-												for (int32 otherpsindex = 0; otherpsindex < CorrectTeamOrder.Num(); ++otherpsindex)
-												{
-													if (AFPSPlayerState* otherps = Cast<AFPSPlayerState>(CorrectTeamOrder[otherpsindex]))
-													{
-														if (CorrectTeamOrder.Contains(playerstate) == false)
-														{
-															if (playerstate->GetScore() > otherps->GetScore())
-															{
-																CorrectTeamOrder.Insert(playerstate, otherpsindex);
-															}
-														}
-													}
-													else
-													{
-														CorrectTeamOrder.Emplace(playerstate);
-													}
-												}
-												if (CorrectTeamOrder.Contains(playerstate) == false)
-												{
-													CorrectTeamOrder.Emplace(playerstate);
-												}
-											}
-											else
-											{
-												if (CorrectTeamOrder.Contains(playerstate) == false)
-												{
-													CorrectTeamOrder.Emplace(playerstate);
-												}
-											}
-										}
-									}
-									Team->UpdateTeamOrder(CorrectTeamOrder);
-								}
-							}
-
-
-
-							gameState->CallHUDUpdate();
-							Player->OnDeathRemoveUI();
-							Player->IsDead = true;
-							//Player->DropWeapon();
-							//Player->DropEquipment();
-							Player->OnPlayerDeath();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-						}
-
-					}
-					if (AFPSPlayerController* pc = Cast<AFPSPlayerController>(PlayerController))
-					{
-						pc->UpdateScoreBoardUI();
-					}
-
-				}
-
-
-				if (AFPSPlayerController* FPSController = Cast<AFPSPlayerController>(*It))
-				{
-
-					if (AFPSProjectGameModeBase* GameMode = Cast<AFPSProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
-					{
-						if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(FPSController->PlayerState))
-						{
-
-
-							float ScorePercent = ((double)ps->Team->TeamScore / GameMode->ScoreToWin);
-
-							FPSController->UpdateMyTeamStats(ps->Team->TeamScore, ScorePercent);
-
-
-
-						}
-
-					}
-					AFPSPlayerController* MyRival = NULL;
-					int32 RivalDifference = 100000;
-					for (FConstControllerIterator OtherControllers = GetWorld()->GetControllerIterator(); OtherControllers; ++OtherControllers) {
-						if (AFPSPlayerController* OtherController = Cast<AFPSPlayerController>(*OtherControllers))
-						{
-							if (OtherController != FPSController)
-							{
-								if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(FPSController->PlayerState))
-								{
-									if (AFPSPlayerState* ps2 = Cast<AFPSPlayerState>(OtherController->PlayerState))
-									{
-										if (ps2->Team->TeamNumber != ps->Team->TeamNumber)
-										{
-
-
-											if (ps2->Team->TeamNumber != 0)
-											{
-
-												if (FGenericPlatformMath::Abs(ps2->Team->TeamScore - ps->Team->TeamScore) < RivalDifference)
-												{
-													MyRival = OtherController;
-													RivalDifference = (FGenericPlatformMath::Abs(ps2->Team->TeamScore - ps->Team->TeamScore));
-												}
-
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-
-					if (MyRival != NULL)
-					{
-						if (AFPSPlayerState* Rivalps = Cast<AFPSPlayerState>(MyRival->PlayerState))
-						{
-							if (AFPSProjectGameModeBase* GameMode = Cast<AFPSProjectGameModeBase>(GetWorld()->GetAuthGameMode())) {
-
-
-								float RivalScorePercent = ((double)Rivalps->Team->TeamScore / GameMode->ScoreToWin);
-
-								FPSController->UpdateRivalStats(Rivalps->Team->TeamNumber, Rivalps->Team->TeamScore, RivalScorePercent);
-								if (Rivalps->Team != NULL)
-								{
-									if (AFPSPlayerState* Myps = Cast<AFPSPlayerState>(FPSController->PlayerState))
-									{
-										Myps->SetRivalTeam(Rivalps->Team);
-									}
-								}
-
-							}
-						}
-					}
-				}
-
-			}
-		}
-		if (AFPSProjectGameModeBase* GameMode = Cast<AFPSProjectGameModeBase>(GetWorld()->GetAuthGameMode()))
-		{
-			for (int32 i = 0; i < Teams.Num(); ++i)
-			{
-				if (ABaseTeam* team = Cast<ABaseTeam>(Teams[i]))
-				{
-					if (team->TeamScore >= GameMode->ScoreToWin)
-					{
-						gameState->WinningTeam = team->TeamNumber;
-						gameState->WinningMessage = team->TeamName.ToString() + " Won";
-						gameState->ClientUpdateWinningTeam(gameState->WinningTeam, FName(*gameState->WinningMessage));
-						gameState->CallHUDGameOver();
-						for (FConstControllerIterator It = GetWorld()->GetControllerIterator(); It; ++It) {
-							if (AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(*It)) {
-								if (AFPSCharacter* Player = Cast<AFPSCharacter>(PlayerController->GetPawn())) {
-									Player->SetCurrentState(EPlayerState::EPlayerWaiting);
-								}
-
-							}
-
-						}
-						gameState->SetCurrentState(EGamePlayState::EGameOver);
-					}
-				}
-			}
-
-		}
-
-	}
-	*/
 }
 
 void AFPSProjectGameModeBase::RespawnPlayer(APlayerController* NewPlayer)
 {
 	UE_LOG(LogClass, Log, TEXT("Respawning"));
-	AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(NewPlayer);
-	TArray<AFPSPlayerStart*> PreferredStarts;
-	bool checkforsafety = true;
-	if (AFPSGameState* gameState = Cast<AFPSGameState>(GameState))
+	if (AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(NewPlayer))
 	{
-		if (gameState->GetCurrentState() != EGamePlayState::EGameOver)
+		if (AFPSPlayerState* PlayerState = Cast<AFPSPlayerState>(PlayerController->PlayerState))
 		{
-
-
-
-			for (int32 i = 0; i < 5; ++i) {
-				for (TActorIterator<AFPSPlayerStart> PlayerStart(GetWorld()); PlayerStart; ++PlayerStart)
+			//TArray<AFPSPlayerStart*> EnemyPreferredStarts;
+			//TArray<AFPSPlayerStart*> TeammatePreferredStarts;
+			TArray<AFPSPlayerStart*> TeammateStarts;
+			FVector2D ClosestTeammateFarthestEnemy;
+			float FarthestDistance = -1.0f;
+			float ClosestDistToMate = 100000.0f;
+			bool checkforsafety = true;
+			TArray<AFPSPlayerStart*> StartsArray;
+			TArray<float> StartsDistFromEnemy;
+			TArray<float> StartsDistFromMate;
+			TArray<float> StartsDistFromMateInOrder;
+			int32 iteratorindex = 0;
+			if (AFPSGameState* gameState = Cast<AFPSGameState>(GameState))
+			{
+				if (gameState->GetCurrentState() != EGamePlayState::EGameOver)
 				{
-					if (PlayerController)
+
+
+
+					for (TActorIterator<AFPSPlayerStart> PlayerStart(GetWorld()); PlayerStart; ++PlayerStart)
 					{
 						if (PlayerStart->Tags.Contains("RespawnPoint"))
 						{
+							float myFarthestDistanceFromEnemy = 0.0f;
+							float myClosestDistanceFromMate = 5000000.0f;
+							for (FConstControllerIterator Iterator = GetWorld()->GetControllerIterator(); Iterator; ++Iterator)
+							{
+								if (AFPSPlayerController* aPlayerController = Cast<AFPSPlayerController>(*Iterator))
+								{
+									if (aPlayerController != PlayerController)
+									{
+										if (AFPSPlayerState* aPlayerState = Cast<AFPSPlayerState>(aPlayerController->PlayerState))
+										{
+											if (PlayerState->Team != aPlayerState->Team)
+											{
+												if (AFPSCharacter* aCharacter = Cast<AFPSCharacter>(aPlayerController->GetPawn()))
+												{
+													float dist = (aCharacter->GetActorLocation() - PlayerStart->GetActorLocation()).Size();
+													if (dist > PlayerStart->FarthestDistanceFromEnemy)
+													{
+														PlayerStart->FarthestDistanceFromEnemy = dist;
+													}
+													if (dist > myFarthestDistanceFromEnemy)
+													{
+														myFarthestDistanceFromEnemy = dist;
+													}
+
+													if (dist > FarthestDistance)
+													{
+															
+														//EnemyPreferredStarts.Insert(*PlayerStart, 0);
+														FarthestDistance = dist;
+
+													}
+													else
+													{
+														/*
+														
+														if (EnemyPreferredStarts.Num() > 1)
+														{
+															for (int32 index = 0; index < EnemyPreferredStarts.Num(); index++)
+															{
+																if (!EnemyPreferredStarts.Contains(*PlayerStart))
+																{
+																	if ((EnemyPreferredStarts[index]->GetActorLocation() - aCharacter->GetActorLocation()).Size() < dist)
+																	{
+																		EnemyPreferredStarts.Insert(*PlayerStart, index);
+																	}
+																}
+															}
+														}
+														if (!EnemyPreferredStarts.Contains(*PlayerStart))
+														{
+															EnemyPreferredStarts.Emplace(*PlayerStart);
+														}
+														*/
+														
+
+													}
+												}
+											}
+											else
+											{
+												if (AFPSCharacter* aCharacter = Cast<AFPSCharacter>(aPlayerController->GetPawn()))
+												{
+													float dist = (aCharacter->GetActorLocation() - PlayerStart->GetActorLocation()).Size();
+													if (dist < PlayerStart->ClosestDistanceToTeammate)
+													{
+														PlayerStart->ClosestDistanceToTeammate = dist;
+													}
+													if (dist < myClosestDistanceFromMate)
+													{
+														myClosestDistanceFromMate = dist;
+													}
+													
+													if (TeammateStarts.Num() > 0)
+													{
+														for (int32 i = 0; i < TeammateStarts.Num(); i++)
+														{
+															if (!TeammateStarts.Contains(*PlayerStart))
+															{
+																if (AFPSPlayerStart* otherPlayerStart = Cast<AFPSPlayerStart>(TeammateStarts[i]))
+																{
+																	if (myClosestDistanceFromMate < StartsDistFromMateInOrder[i])
+																	{
+																		TeammateStarts.Insert(*PlayerStart, i);
+																		StartsDistFromMateInOrder.Insert(myClosestDistanceFromMate, i);
+																		break;
+																	}
+
+																}
+															}
+														}
+														if (!TeammateStarts.Contains(*PlayerStart))
+														{
+															TeammateStarts.Emplace(*PlayerStart);
+															StartsDistFromMateInOrder.Emplace(myClosestDistanceFromMate);
+														}
+													}
+													else
+													{
+														StartsDistFromMateInOrder.Emplace(myClosestDistanceFromMate);
+														TeammateStarts.Emplace(*PlayerStart);
+													}
+													
+													if (dist < ClosestDistToMate)
+													{
+
+														//TeammatePreferredStarts.Insert(*PlayerStart, 0);
+														ClosestDistToMate = dist;
+
+													}
+												}
+											}
+										}
+									}
+								}
+
+
+							}
+							StartsDistFromMate.Emplace(myClosestDistanceFromMate);
+							StartsDistFromEnemy.Emplace(myFarthestDistanceFromEnemy);
+							StartsArray.Emplace(*PlayerStart);
+
+
+						}
+						iteratorindex += 1;
+
+					}
+					if (StartsDistFromMate.Num() > 1)
+					{
+
+						ClosestDistToMate = StartsDistFromMateInOrder[StartsDistFromMateInOrder.Num() / 2 - 1];
+						
+					}
+					ClosestTeammateFarthestEnemy = FVector2D(ClosestDistToMate, FarthestDistance);
+					float BestMagnitude = 3000000000.0f;
+					float testFarthestDistance = 30000000.0f;
+					AFPSPlayerStart* BestStart = NULL;
+
+					for (int32 i = 0; i < StartsArray.Num(); i++)
+					{
+						if (AFPSPlayerStart* playerStart = Cast<AFPSPlayerStart>(StartsArray[i]))
+						{
+							FVector2D myCordinate = FVector2D(StartsDistFromMate[i], StartsDistFromEnemy[i]);
+							float myDistanceToBest = (ClosestTeammateFarthestEnemy - myCordinate).Size();
+							if (myDistanceToBest < BestMagnitude)
+							{
+								BestStart = playerStart;
+								BestMagnitude = myDistanceToBest;
+							}
+						}
+					}
+					/*
+					for (TActorIterator<AFPSPlayerStart> PlayerStart(GetWorld()); PlayerStart; ++PlayerStart)
+					{
+						if (PlayerStart->Tags.Contains("RespawnPoint"))
+						{
+							FVector2D myCordinate = FVector2D(PlayerStart->ClosestDistanceToTeammate, PlayerStart->FarthestDistanceFromEnemy);
+							float myDistanceToBest = (ClosestTeammateFarthestEnemy - myCordinate).Size();
+							UE_LOG(LogClass, Log, TEXT("This is %s my distance to best possible point is %f"), *PlayerStart->GetName(), myDistanceToBest);
+							/*
+							if (abs(myCordinate.Y - ClosestTeammateFarthestEnemy.Y) < testFarthestDistance)
+							{
+								BestStart = *PlayerStart;
+								testFarthestDistance = abs(myCordinate.Y - ClosestTeammateFarthestEnemy.Y);
+							}
+							*//*
+							if (myDistanceToBest < BestMagnitude)
+							{
+								BestStart = *PlayerStart;
+								BestMagnitude = myDistanceToBest;
+							}
+							
+						}
+					}
+					*/
+					if (BestStart != NULL)
+					{
+						UE_LOG(LogClass, Log, TEXT("The Best start is: %s"), *BestStart->GetName());
+						NewPlayer->SetPawn(SpawnDefaultPawnFor(NewPlayer, BestStart));
+						RestartPlayer(NewPlayer);
+						AFPSCharacter* Character = Cast<AFPSCharacter>(NewPlayer->GetPawn());
+						if (Character)
+						{
+							Character->TriggerAddUI();
+							Character->AddTeamColor();
+
+						}
+					}
+					else
+					{
+						UE_LOG(LogClass, Log, TEXT("No Best Start"));
+					}
+
+
+
+					/*
+					
+					if (PreferredStarts.Num() > 1) {
+						AFPSPlayerStart* BestStart = PreferredStarts[FMath::RandRange(0, PreferredStarts.Num() - 1)];
+						float SpawnDistance = 0.0f;
+						for (int32 i = 0; i < PreferredStarts.Num(); ++i) {
 							for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 							{
-								AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(*Iterator);
-								if (PlayerController)
+
+								if (AFPSPlayerController* newPlayerController = Cast<AFPSPlayerController>(*Iterator))
 								{
-									if (PlayerController != NewPlayer) {
-										if (AFPSPlayerController* NewFPSPlayer = Cast<AFPSPlayerController>(NewPlayer))
-										{
+									if (newPlayerController != PlayerController) {
 
-											if (AFPSPlayerState* playerstate = Cast<AFPSPlayerState>(PlayerController->PlayerState)) {
-												if (AFPSPlayerState* fpsplayerstate = Cast<AFPSPlayerState>(NewFPSPlayer->PlayerState)) {
-													if (playerstate->Team != fpsplayerstate->Team)
+										if (AFPSPlayerState* playerstate = Cast<AFPSPlayerState>(PlayerController->PlayerState)) {
+											if (AFPSPlayerState* newplayerstate = Cast<AFPSPlayerState>(newPlayerController->PlayerState)) {
+												if (playerstate->Team != newplayerstate->Team)
+												{
+
+
+													if (AFPSCharacter* newPlayerCharacter = Cast<AFPSCharacter>(newPlayerController->GetPawn()))
 													{
-														AFPSCharacter* PlayerCharacter = Cast<AFPSCharacter>(PlayerController->GetPawn());
-														if (PlayerCharacter) {
-															UCameraComponent* PlayerCamera = Cast<UCameraComponent>(PlayerCharacter->FPSCameraComponent);
-															if (PlayerCamera)
+														if (UCameraComponent* newPlayerCamera = Cast<UCameraComponent>(newPlayerCharacter->FPSCameraComponent))
+														{
+															FVector CameraLocation = newPlayerCamera->GetComponentLocation();
+															FVector SpawnPointLocation = PreferredStarts[i]->GetActorLocation();
+															if (FVector::Dist(CameraLocation, SpawnPointLocation) > SpawnDistance)
 															{
-																FVector CameraLocation = PlayerCamera->GetComponentLocation();
-																FVector SpawnPointLocation = PlayerStart->GetActorLocation();
-																FVector DirectionBetween = (SpawnPointLocation - CameraLocation).GetSafeNormal();
-																FVector CameraDirection = PlayerCamera->GetForwardVector().GetSafeNormal();
-																float dotvalue = FGenericPlatformMath::Abs(FVector::DotProduct(DirectionBetween, CameraDirection));
-
-																if (dotvalue > .68f) {
-
-
-																	FHitResult hit;
-
-																	if (GetWorld()->LineTraceSingleByChannel(hit, CameraLocation, CameraLocation + (DirectionBetween * 10000), ECollisionChannel::ECC_Camera))
-																	{
-
-
-																		if (AFPSPlayerStart* spawnpoint = Cast<AFPSPlayerStart>(hit.GetActor())) {
-
-																		}
-																		else {
-
-
-																			PreferredStarts.AddUnique(*PlayerStart);
-																		}
-																	}
-
-																	if (i >= 3) {
-																		UE_LOG(LogClass, Log, TEXT("Respawning anyway"));
-																		PreferredStarts.AddUnique(*PlayerStart);
-																	}
-
-																}
-																else
-																{
-																	if (FVector::Dist(CameraLocation, SpawnPointLocation) > SafeSpawnDistance || i >= 3) {
-																		PreferredStarts.AddUnique(*PlayerStart);
-																	}
-
-																}
-
+																BestStart = PreferredStarts[i];
+																SpawnDistance = FVector::Dist(CameraLocation, SpawnPointLocation);
 															}
 														}
 													}
 												}
+
 											}
 										}
+
 									}
 								}
-
 							}
+
 						}
-					}
-				}
-				if (PreferredStarts.Num() == 0) {
+						int32 PlayerStartIndex = FMath::RandRange(0, PreferredStarts.Num() - 1);
+						NewPlayer->SetPawn(SpawnDefaultPawnFor(NewPlayer, BestStart));
 
-				}
-				else
-				{
-					break;
-				}
-			}
-			if (PreferredStarts.Num() > 1) {
-				AFPSPlayerStart* BestStart = PreferredStarts[FMath::RandRange(0, PreferredStarts.Num() - 1)];
-				float SpawnDistance = 0.0f;
-				for (int32 i = 0; i < PreferredStarts.Num(); ++i) {
-					for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
-					{
+						RestartPlayer(NewPlayer);
+						AFPSCharacter* Character = Cast<AFPSCharacter>(NewPlayer->GetPawn());
+						if (Character)
+						{
+							Character->TriggerAddUI();
+							Character->AddTeamColor();
 
-						AFPSPlayerController* PlayerController = Cast<AFPSPlayerController>(*Iterator);
+						}
 						if (PlayerController)
 						{
-							if (PlayerController != NewPlayer) {
-								if (AFPSPlayerController* NewFPSPlayer = Cast<AFPSPlayerController>(NewPlayer))
-								{
-									if (AFPSPlayerState* playerstate = Cast<AFPSPlayerState>(PlayerController->PlayerState)) {
-										if (AFPSPlayerState* fpsplayerstate = Cast<AFPSPlayerState>(NewFPSPlayer->PlayerState)) {
-											if (playerstate->Team != fpsplayerstate->Team)
-											{
 
-
-												AFPSCharacter* PlayerCharacter = Cast<AFPSCharacter>(PlayerController->GetPawn());
-												if (PlayerCharacter) {
-													UCameraComponent* PlayerCamera = Cast<UCameraComponent>(PlayerCharacter->FPSCameraComponent);
-													if (PlayerCamera)
-													{
-														FVector CameraLocation = PlayerCamera->GetComponentLocation();
-														FVector SpawnPointLocation = PreferredStarts[i]->GetActorLocation();
-														if (FVector::Dist(CameraLocation, SpawnPointLocation) > SpawnDistance)
-														{
-															BestStart = PreferredStarts[i];
-															SpawnDistance = FVector::Dist(CameraLocation, SpawnPointLocation);
-														}
-													}
-												}
-											}
-
-										}
-									}
-								}
-							}
 						}
 					}
+					else {
+						int32 PlayerStartIndex = 0;
+						NewPlayer->SetPawn(SpawnDefaultPawnFor(NewPlayer, PreferredStarts[PlayerStartIndex]));
 
-				}
-				int32 PlayerStartIndex = FMath::RandRange(0, PreferredStarts.Num() - 1);
-				NewPlayer->SetPawn(SpawnDefaultPawnFor(NewPlayer, BestStart));
+						RestartPlayer(NewPlayer);
+						AFPSCharacter* Character = Cast<AFPSCharacter>(NewPlayer->GetPawn());
+						if (Character)
+						{
+							Character->TriggerAddUI();
 
-				RestartPlayer(NewPlayer);
-				AFPSCharacter* Character = Cast<AFPSCharacter>(NewPlayer->GetPawn());
-				if (Character)
-				{
-					Character->TriggerAddUI();
-					Character->AddTeamColor();
+						}
+						if (PlayerController)
+						{
 
-				}
-				if (PlayerController)
-				{
-
-				}
-			}
-			else {
-				int32 PlayerStartIndex = 0;
-				NewPlayer->SetPawn(SpawnDefaultPawnFor(NewPlayer, PreferredStarts[PlayerStartIndex]));
-
-				RestartPlayer(NewPlayer);
-				AFPSCharacter* Character = Cast<AFPSCharacter>(NewPlayer->GetPawn());
-				if (Character)
-				{
-					Character->TriggerAddUI();
-
-				}
-				if (PlayerController)
-				{
-
+						}
+					}
+					*/
 				}
 			}
 		}
@@ -598,28 +413,6 @@ void AFPSProjectGameModeBase::StartNewPlayerClient(APlayerController* NewPlayer)
 
 
 						}
-						/*
-						else if (NewPlayerState->Team->TeamNumber == 2 && PlayerStart->Tags.Contains("Team2")) //&& PlayerStart->PlayerStartTag != FName(TEXT("Blocked")))
-						{
-							if (PlayerStart->PlayerStartTag == FName(TEXT("Blocked"))) {
-								if (BlockCheck == false) {
-
-									PreferredStarts.AddUnique(*PlayerStart);
-								}
-								else {
-
-								}
-
-							}
-							else {
-
-								PreferredStarts.AddUnique(*PlayerStart);
-							}
-							// Player should spawn on Suspects
-
-
-						}
-						*/
 						
 
 					}
@@ -633,15 +426,7 @@ void AFPSProjectGameModeBase::StartNewPlayerClient(APlayerController* NewPlayer)
 				}
 
 			}
-			/*
-			if (NewPlayerState->Team->TeamNumber == 0)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "Player is a spectator");
-				return;
-			}
-			else
-			{
-			*/
+
 			if (PreferredStarts.Num() > 0)
 			{
 
@@ -666,13 +451,13 @@ void AFPSProjectGameModeBase::StartNewPlayerClient(APlayerController* NewPlayer)
 					if (AFPSGameState* MyGameState = Cast<AFPSGameState>(GameState))
 					{
 						MyGameState->ClientUpdateNumberOfTeams(NumberOfTeams);
-						//TestPlayerController->TriggerAddAliveUI();
+						
 					}
-					//TestPlayerController->TriggerAddAliveUI();
+					
 				}
 				UE_LOG(LogClass, Log, TEXT("client controller has team and spawned in"));
 			}
-			//}
+			
 
 		}
 	}
@@ -725,56 +510,8 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 
 			
 			}
-			/*
-			if (MyPlayerState->Team->TeamNumber == 0)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, "Player is a spectator");
-				return;
-			}
-			else
-			{
-				
-				if (TestPlayerController->GetPlayerTeam() == 1) {
-
-
-					if (AFPSGameState* MyGameState = Cast<AFPSGameState>(GameState))
-					{
-						MyGameState->ClientUpdateTeam1Controllers(TestPlayerController);
-						if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(TestPlayerController->PlayerState))
-						{
-							MyGameState->ClientUpdateTeam1PlayerStates(ps);
-						}
-
-					}
-
-					UE_LOG(LogClass, Log, TEXT("Team1PlayerControllerslength: %d"), Team1PlayerControllers.Num());
-					UE_LOG(LogClass, Log, TEXT("Team2PlayerControllerslength: %d"), Team2PlayerControllers.Num());
-
-					{
-						//MyGameState->ClientUpdateTeam1Controllers(TestPlayerController);
-						//UE_LOG(LogClass, Log, TEXT("added server to team 1"));
-
-					}
-				}
-				if (TestPlayerController->GetPlayerTeam() == 2) {
-					if (AFPSGameState* MyGameState = Cast<AFPSGameState>(GameState))
-					{
-						MyGameState->ClientUpdateTeam2Controllers(TestPlayerController);
-						if (AFPSPlayerState* ps = Cast<AFPSPlayerState>(TestPlayerController->PlayerState))
-						{
-							MyGameState->ClientUpdateTeam2PlayerStates(ps);
-						}
-					}
-
-					UE_LOG(LogClass, Log, TEXT("Team1PlayerControllerslength: %d"), Team1PlayerControllers.Num());
-					UE_LOG(LogClass, Log, TEXT("Team2PlayerControllerslength: %d"), Team2PlayerControllers.Num());
-
-				}
-				
-			*/
-
-
-				
+			
+			
 			if (AFPSGameState* MyGameState = Cast<AFPSGameState>(GameState))
 			{
 

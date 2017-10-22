@@ -24,6 +24,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Defaults")
 		int32 TeamNumber;
 
+	float FarthestDistanceFromEnemy = 0.0f;
+	float ClosestDistanceToTeammate = 3000000.0f;
+
 	UPROPERTY(VisibleAnywhere)
 		UShapeComponent* TakenBox;
 
