@@ -216,8 +216,18 @@ void AFPSProjectGameModeBase::RespawnPlayer(APlayerController* NewPlayer)
 					}
 					if (StartsDistFromMate.Num() > 1)
 					{
-
-						ClosestDistToMate = StartsDistFromMateInOrder[StartsDistFromMateInOrder.Num() / 2 - 1];
+						float Average = 0.0f;
+						for (int32 i = 0; i < StartsDistFromMate.Num(); i++)
+						{
+							Average += StartsDistFromMate[i];
+						}
+						Average = Average / StartsDistFromMate.Num();
+						float BelowAverage = 0.0f;
+						if (StartsDistFromMateInOrder[StartsDistFromMateInOrder.Num() - 1])
+						{
+							BelowAverage = (Average + StartsDistFromMateInOrder[StartsDistFromMateInOrder.Num() - 1]) / 2.0f;
+						}
+						ClosestDistToMate = BelowAverage;
 						
 					}
 					ClosestTeammateFarthestEnemy = FVector2D(ClosestDistToMate, FarthestDistance);
@@ -229,6 +239,7 @@ void AFPSProjectGameModeBase::RespawnPlayer(APlayerController* NewPlayer)
 					{
 						if (AFPSPlayerStart* playerStart = Cast<AFPSPlayerStart>(StartsArray[i]))
 						{
+							
 							FVector2D myCordinate = FVector2D(StartsDistFromMate[i], StartsDistFromEnemy[i]);
 							float myDistanceToBest = (ClosestTeammateFarthestEnemy - myCordinate).Size();
 							if (myDistanceToBest < BestMagnitude)
@@ -236,6 +247,7 @@ void AFPSProjectGameModeBase::RespawnPlayer(APlayerController* NewPlayer)
 								BestStart = playerStart;
 								BestMagnitude = myDistanceToBest;
 							}
+							UE_LOG(LogClass, Log, TEXT("This is %s and my magnitude is %f"), *playerStart->GetName(), myDistanceToBest);
 						}
 					}
 					/*
@@ -264,7 +276,7 @@ void AFPSProjectGameModeBase::RespawnPlayer(APlayerController* NewPlayer)
 					*/
 					if (BestStart != NULL)
 					{
-						UE_LOG(LogClass, Log, TEXT("The Best start is: %s"), *BestStart->GetName());
+						UE_LOG(LogClass, Log, TEXT("The Best start is: %s with a magnitude of %f"), *BestStart->GetName(),BestMagnitude);
 						NewPlayer->SetPawn(SpawnDefaultPawnFor(NewPlayer, BestStart));
 						RestartPlayer(NewPlayer);
 						AFPSCharacter* Character = Cast<AFPSCharacter>(NewPlayer->GetPawn());
@@ -382,6 +394,7 @@ void AFPSProjectGameModeBase::StartNewPlayerClient(APlayerController* NewPlayer)
 			NewPlayer->GetPawn()->Destroy();
 			AFPSPlayerController* TestPlayerController = Cast<AFPSPlayerController>(NewPlayer);
 			TArray<AFPSPlayerStart*> PreferredStarts;
+			UE_LOG(LogClass, Log, TEXT("Client: My starting team number is: %d"), NewPlayerState->Team->TeamNumber);
 			bool BlockCheck = true;
 			for (int32 i = 0; i < 2; ++i) {
 
@@ -492,7 +505,7 @@ void AFPSProjectGameModeBase::StartNewPlayer(APlayerController* NewPlayer)
 			{
 				MyGameState->SetNumberOfPlayers(GetNumPlayers());
 			}
-
+			UE_LOG(LogClass, Log, TEXT("Server: My starting team number is: %d"), MyPlayerState->Team->TeamNumber);
 
 			for (TActorIterator<AFPSPlayerStart> PlayerStart(GetWorld()); PlayerStart; ++PlayerStart)
 			{
