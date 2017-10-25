@@ -153,6 +153,12 @@ public:
 		float ShotLocation_MinY;
 
 
+	//Armor
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor")
+		USkeletalMeshComponent* HelmetMesh;
+
+
+
 
 	//handling player state
 	UFUNCTION(BlueprintPure)

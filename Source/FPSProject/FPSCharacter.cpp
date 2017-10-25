@@ -46,6 +46,8 @@ AFPSCharacter::AFPSCharacter()
 	GrenadeDetectionBox->bGenerateOverlapEvents = true;
 
 
+	HelmetMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HelmetMesh"));
+	HelmetMesh->SetupAttachment(GetMesh());
 
 
 
@@ -604,7 +606,7 @@ void AFPSCharacter::BeginPlay()
 	Super::BeginPlay();
 	CurrentState = EPlayerState::EPlayerPlaying;
 
-
+	HelmetMesh->SetMasterPoseComponent(GetMesh());
 
 
 	if (AFPSPlayerState* myPS = Cast<AFPSPlayerState>(PlayerState))
